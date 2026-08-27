@@ -14,6 +14,9 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
+  "optionalDependencies": {
+    "jsln": "github:AtomicNoggin/jsln"
+  },
   "devDependencies": {
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1"
