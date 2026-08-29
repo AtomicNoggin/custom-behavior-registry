@@ -1,3 +1,4 @@
+import CustomBehaviorRegistry from "custom-behavior-registry";
 import JSLN from "jsln";
 
 window.customBehavior =
@@ -82,7 +83,9 @@ const intlOptionsProperty = {
   enumerable: true,
   get() {
     const options = this.getAttribute("intl-options");
-    return options === null ? {} : JSLN.parse(`{${options}}`, { strictMode: true });
+    return options === null
+      ? {}
+      : JSLN.parse(`{${options}}`, { strictMode: true });
   },
   set(value) {
     if (
@@ -140,9 +143,10 @@ Object.defineProperty(
 );
 
 class IntlLang {
-  static attributeFilter = ["lang"];
+  static observedAttributes = ["lang"];
   lastValue = null;
-  constructor(element, options) {}
+  constructor(element, options) {
+  }
   attributeChangedCallback(element, attributeName, oldValue, newValue) {
     const event = new CustomEvent("intl-langchange", {
       bubbles: true,
@@ -182,7 +186,7 @@ customBehavior.define("intl-lang", IntlLang, { asAttribute: "lang" });
 
 class IntlTimeType {
   static tagFilter = ["time"];
-  static attributeFilter = [
+  static observedAttributes = [
     "intl-format",
     "intl-skeleton",
     "intl-options",
@@ -463,47 +467,47 @@ class IntlTimeType {
         ...options,
       };
     const type = element.intlFormat.split(/\s/);
-    combined.requestedFormat = type[0] || 'datetime';
-      if (combined.requestedFormat === "date") {
-        delete combined.hour;
-        delete combined.minute;
-        delete combined.second;
-        delete combined.fractionalSecondDigits;
-        delete combined.timeZoneName;
-      } else if (combined.requestedFormat === "time") {
-        delete combined.weekday;
-        delete combined.era;
-        delete combined.year;
-        delete combined.month;
-        delete combined.day;
+    combined.requestedFormat = type[0] || "datetime";
+    if (combined.requestedFormat === "date") {
+      delete combined.hour;
+      delete combined.minute;
+      delete combined.second;
+      delete combined.fractionalSecondDigits;
+      delete combined.timeZoneName;
+    } else if (combined.requestedFormat === "time") {
+      delete combined.weekday;
+      delete combined.era;
+      delete combined.year;
+      delete combined.month;
+      delete combined.day;
+    }
+    if (
+      !(
+        combined.weekday ||
+        combined.era ||
+        combined.year ||
+        combined.month ||
+        combined.day ||
+        combined.hour ||
+        combined.minute ||
+        combined.second ||
+        combined.fractionalSecondDigits ||
+        combined.timeZoneName
+      )
+    ) {
+      switch (combined.requestedFormat) {
+        case "date":
+          combined.dateStyle = combined.dateStyle || type[1] || "short";
+          break;
+        case "time":
+          combined.timeStyle = combined.timeStyle || type[1] || "short";
+          break;
+        case "datetime":
+          combined.dateStyle = combined.dateStyle || type[1] || "short";
+          combined.timeStyle =
+            combined.timeStyle || type[2] || type[1] || "short";
+          break;
       }
-      if (
-        !(
-          combined.weekday ||
-          combined.era ||
-          combined.year ||
-          combined.month ||
-          combined.day ||
-          combined.hour ||
-          combined.minute ||
-          combined.second ||
-          combined.fractionalSecondDigits ||
-          combined.timeZoneName
-        )
-      ) {
-        switch (combined.requestedFormat) {
-          case "date":
-            combined.dateStyle = combined.dateStyle || type[1] || "short";
-            break;
-          case "time":
-            combined.timeStyle = combined.timeStyle || type[1] || "short";
-            break;
-          case "datetime":
-            combined.dateStyle = combined.dateStyle || type[1] || "short";
-            combined.timeStyle =
-              combined.timeStyle || type[2] || type[1] || "short";
-            break;
-        }
     }
     return combined;
   }
@@ -529,25 +533,28 @@ class IntlTimeType {
   }
   getDateValue(element) {
     const lclTzId = element.intlOptions.timeZone || Temporal.Now.timeZoneId(),
-      dt = element.dateTime || "",
-      [
-        match,
-        date,
-        year,
-        month,
-        day,
-        time,
-        hour,
-        minute,
-        second,
-        ms,
-        tzOffset,
-        tzId,
-        calId,
-      ] =
-        dt.match(
-          /^((\d{4}|[+-]\d{6})?-?(\d{2})?-?(\d{2})?)[Tt\s]?((\d{2}):?(\d{2})(?:\:?(\d{2}))?([.,]\d{1,9})?)?([Zz]|[+-]\d{2}:?\d{2})?([.,]\d{1,9})?(?:\[(\w+(?:\/\w+){1,2})\])?(?:\[u-ca=([\w-]+)\])?$/,
-        ) || [];
+      dt = element.dateTime || "";
+    if (!dt) {
+      return Temporal.Now.zonedDateTimeISO(lclTzId);
+    }
+    const [
+      match,
+      date,
+      year,
+      month,
+      day,
+      time,
+      hour,
+      minute,
+      second,
+      ms,
+      tzOffset,
+      tzId,
+      calId,
+    ] =
+      dt.match(
+        /^((\d{4}|[+-]\d{6})?-?(\d{2})?-?(\d{2})?)[Tt\s]?((\d{2}):?(\d{2})(?:\:?(\d{2}))?([.,]\d{1,9})?)?([Zz]|[+-]\d{2}:?\d{2})?([.,]\d{1,9})?(?:\[(\w+(?:\/\w+){1,2})\])?(?:\[u-ca=([\w-]+)\])?$/,
+      ) || [];
     let temporal = null;
     if (date && !month) {
       // probably only found 4 digits
@@ -574,7 +581,7 @@ class IntlTimeType {
       } catch (e) {}
     } else if (date && time && tzOffset) {
       try {
-        temporal = Temporal.Instant.from(match).toZonedDateTime(lclTzId);
+        temporal = Temporal.Instant.from(match).toZonedDateTimeISO(lclTzId);
       } catch (e) {}
     } else if (date && time) {
       try {
@@ -586,7 +593,7 @@ class IntlTimeType {
           minute: +minute,
           second: second ? +second : 0,
           millisecond: ms ? +ms.slice(1) : 0,
-        }).toZonedDateTimeISO(lclTzId);
+        }).toZonedDateTime(lclTzId);
       } catch (e) {}
     } else if (!date && time) {
       temporal = Temporal.Now.plainDateISO().toZonedDateTime({
@@ -629,13 +636,27 @@ class IntlTimeType {
         sig = lang + ":" + JSON.stringify(options) + ":" + element.dateTime;
       if (sig !== this.sig) {
         this.sig = sig;
-        const temporal = this.getDateValue(element);
-        temporal.calendarId &&
-          (options.calendar = options.calendar || temporal.calendarId);
-        temporal.dropTimeStyle && delete options.timeStyle;
-        element.textContent = temporal
-          ? temporal.toLocaleString(lang, options)
-          : this.initContent;
+        let temporal = this.getDateValue(element);
+        if (temporal) {
+          temporal.dropTimeStyle && delete options.timeStyle;
+          if (options.calendar) {
+            temporal = temporal.withCalendar(options.calendar);
+          }
+          if (options.timeZone) {
+            temporal = (temporal.withTimeZone
+              ? temporal.withTimeZone(options.timeZone)
+              : temporal.toZonedDateTime
+                ? temporal.toZonedDateTime(options.timeZone)
+                : temporal.toZonedDateTimeISO
+                  ? temporal.toZonedDateTimeISO(options.timeZone)
+                  : temporal);
+          }
+          element.textContent = temporal
+            ? temporal.toLocaleString(lang, options)
+            : this.initContent;
+        } else {
+          element.textContent = this.initContent;
+        }
       }
     } else {
       element.textContent = this.initContent;
@@ -651,7 +672,6 @@ class IntlTimeType {
       document[Symbol.for("intl-format-langchange-set")] =
         document[Symbol.for("intl-format-langchange-set")] || new Set();
       const handler = (document[Symbol.for("intl-format-langchange")] = (e) => {
-        console.log(e);
         for (const element of document[
           Symbol.for("intl-format-langchange-set")
         ]) {

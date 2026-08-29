@@ -10,14 +10,25 @@
   "license": "Apache-2.0",
   "author": "Patrick Denny",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "esbuild index.js --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/index.js",
+    "prepack": "npm run build",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "optionalDependencies": {
     "jsln": "github:AtomicNoggin/jsln"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1"
   }

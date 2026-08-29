@@ -24,11 +24,6 @@ npm install jsln
 Load the registry and a `Temporal` implementation before loading [`index.js`](index.js). The script expects `CustomBehaviorRegistry` to be globally available and registers formatting for `<time>` elements.
 
 ```html
-<script type="module">
-  import CustomBehaviorRegistry from "./index.js";
-
-  window.customBehavior = new CustomBehaviorRegistry();
-</script>
 <script src="./examples/intl-time/index.js"></script>
 ```
 
