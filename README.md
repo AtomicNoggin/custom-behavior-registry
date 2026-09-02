@@ -165,7 +165,7 @@ ariaRoleBehaviors.define('treegrid', AriaTreegridBehavior);
 // matches <[tagname] role="treegrid" ...>
 ```
 
-### Create a **custom-attributes** like registry
+### Create a **custom-attributes** like `customAttributes` registry
 ```JS
 //keep an external array to hold attribute names
 const attributeNames = [];
@@ -212,6 +212,128 @@ window.ariaAttributeBehaviors = new CustomBehaviorRegistry({
 ariaAttributeBehaviors.define('level', AriaTreegridExpander)
 // matches <[tagname] aria-level[="..."] ...>
 ```
+
+### Combine all of the above into a `customBehaviors` registry
+
+use the options object from each registered behavior devinition to determine how it will connect
+
+| Option | Description |
+| --- | --- |
+| `asQuery` | Connect this behavior to elements using a custom query. If value is true, use the behavior name as query selector. If value a string, use it is as the query selector. Ignore if false or omitted |
+| `asTag` | Connect this behavior to elements with a matching tagname. If value is true, use the behavior name as the tagname. If value is a string, use is it as the tagname. ignore if false or omitted |
+| `asClass` | Connect this behavior to elements with a matching classname. If value is true, use the behavior name as the classname. If value is a string, use is it as the classname. Ignore if false or omitted |
+| `asAttribute` | Connect this behavior to elements with a specific named attribute. If value is true, use the behavior name as the attribute. If value is a string, use is it as the attribute. ignore if false or omitted |
+| `asAttributeValue` | Connect this behavior to elements with a specific named attribute that contains a specific value as one of it's space delimited values. Use the option string value as the attribute name to check. Use the behavior name as the value to compare against. Ignore if omitted |
+
+If more than one option is set, an element will be connected if it matches any one setting.
+
+```JS
+window.customBehavior =
+  window.customBehavior ||
+  new CustomBehaviorRegistry({
+    queryGenerator: (name, behavior, options) => {
+      let parts = [],
+        query = "";
+      if (options.asQuery) {
+        query =
+          options.asQuery + "" === options.asQuery ? options.asQuery : name;
+      }
+      if (options.asTag) {
+        if (!behavior.tagFilter?.length) {
+          behavior.tagFilter = [];
+        }
+        const value =
+          options.asTag + "" === options.asTag ? options.asTag : name;
+        behavior.tagFilter.includes(value) || behavior.tagFilter.push(value);
+        parts.push(value);
+      }
+      if (options.asClass) {
+        parts.push(
+          "." + options.asClass + "" === options.asClass
+            ? options.asClass
+            : name,
+        );
+      }
+      if (options.asAttribute) {
+        parts.push(
+          "[" +
+            (options.asAttribute + "" === options.asAttribute
+              ? options.asAttribute
+              : name) +
+            "]",
+        );
+      }
+      if (options.asAttributeValue + "" === options.asAttributeValue) {
+        parts.push("[" + options.asAttributeValue + '="' + name + '"]');
+      }
+      if (parts.length) {
+        query += (query.length ? ", " : "") + ":is(" + parts.join(", ") + ")";
+      } else if (!query.length && behavior.tagFilter?.length) {
+        query = "*";
+      }
+      return query;
+    },
+    definedCallback: (name, behavior, options) => {
+      const attributeFilter =
+        window.customBehavior[Symbol.for("attributeFilter")] || [];
+      let update = false;
+      if (options.asClass && !attributeFilter.includes("class")) {
+        attributeFilter.push("class");
+        update = true;
+      }
+      if (options.asAttribute) {
+        const value =
+          options.asAttribute + "" === options.asAttribute
+            ? options.asAttribute
+            : name;
+        if (!attributeFilter.includes(value)) {
+          attributeFilter.push(value);
+          update = true;
+        }
+      }
+      if (options.asAttributeValue + "" === options.asAttributeValue) {
+        const value = options.asAttributeValue.replace(/[*|~$^]$/, "");
+        if (!attributeFilter.includes(value)) {
+          attributeFilter.push(value);
+          update = true;
+        }
+      }
+      if (update) {
+        window.customBehavior[Symbol.for("attributeFilter")] = attributeFilter;
+        return { attributeFilter };
+      }
+    },
+  });
+
+
+customBehavior.define('[role="tablist"] > [role="tab"]',TabHandler, {asQuery:true});
+// matches the second element in <[tagname]] role="tablist" ...>  <[tagname] role="tab" ...>
+
+customBehavior.define('treegrid-level', AriaTreegridExpander, {asQuery: 'table[role="treegrid"] > * > tr[aria-level]'});
+// matches the <tr> in <table role="treegrid" ...> <thead|tfoot|tbody> <tr aria-level="..." ...>
+
+customBehavior.define('shoot-fireworks', ShootFireworks, {asClass:true}); 
+// matches <[tagname] class="shoot-fireworks ...">
+
+customBehavior.define('my-customtag', BehaviorAsCustomElement , {asTag:true});
+// matches <my-customtag ...>
+
+customBehavior.define('intl-datetime-format',IntlDateTimeFormater,{asTag:'time'});
+// matches <time ...>
+
+customBehavior.define('aria-expanded', AriaExpander , {asAttribute:true});
+// matches <[tagname] aria-expanded[="... "] ...>
+
+customBehavior.define('intl-lang', IntlLangChangeDispatcher, {asAttribute:'lang'});
+// matches <[tagname] lang[='...']>
+
+customBehavior.define('sticky-headers', StickyHeaders, {asAttributeValue:'has'});
+// matches <[tagname] has="sticky-headers ...">
+
+
+customBehavior.define('my-tooltip', StickyHeaders, {asTag: true, asClass: true, asAttribute:true});
+// matches either <my-tooltip ...>, <[tagname] class="sticky-headers ...">, or <[tagname] my-tooltip[="..."]>
+  ```
 
 ## Define a Behavior
 

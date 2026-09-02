@@ -1,0 +1,352 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intl Data Example</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "jsln": "https://cdn.jsdelivr.net/gh/atomicnoggin/jsln/dist/index.js",
+          "custom-behavior-registry": "https://cdn.jsdelivr.net/gh/atomicnoggin/custom-behavior-registry/index.js"
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem auto;
+        max-width: 48rem;
+      }
+    </style>
+    <script type="module" src="./index.js"></script>
+  </head>
+  <body>
+    <h1>IntlData test harness</h1>
+    <h2>
+      Intl-Data:
+      <data id="formatted" intl-format="decimal" value="1234.56">1234.56</data>
+    </h2>
+
+    <form>
+      <fieldset>
+        <legend>Intl-Data Attributes</legend>
+
+        <label for="locale">HTML lang:</label>
+        <select id="locale">
+          <option value="">(None)</option>
+        </select>
+        <br />
+
+        <label for="value">DATA value:</label>
+        <input id="value" type="number" value="1234.56" step="any" />
+        <br />
+
+        <label for="format">DATA intl-format:</label>
+        <select id="format">
+          <option value="number">Number</option>
+          <option value="decimal" selected>Decimal</option>
+          <option value="currency">Currency</option>
+          <option value="percent">Percent</option>
+          <option value="unit">Unit</option>
+        </select>
+        <br />
+
+        <span show-if-currency style="display: none">
+          <label for="currency">DATA intl-currency:</label>
+          <select id="currency">
+            <option value="">(None)</option>
+          </select>
+          <br />
+        </span>
+
+        <span show-if-unit style="display: none">
+          <label for="unit">DATA intl-unit:</label>
+          <select id="unit">
+            <option value="">(None)</option>
+          </select>
+          <br />
+        </span>
+
+        <fieldset id="options">
+          <legend>DATA intl-options</legend>
+
+          <label for="localeMatcher">Locale Matcher:</label>
+          <select id="localeMatcher">
+            <option value="">(None)</option>
+            <option value="best fit">Best Fit</option>
+            <option value="lookup">Lookup</option>
+          </select>
+          <br />
+
+          <label for="currencyDisplay">Currency Display:</label>
+          <select id="currencyDisplay" disable-unless-format="currency">
+            <option value="">(None)</option>
+            <option value="code">Code</option>
+            <option value="symbol">Symbol</option>
+            <option value="narrowSymbol">Narrow Symbol</option>
+            <option value="name">Name</option>
+          </select>
+          <br />
+
+          <label for="currencySign">Currency Sign:</label>
+          <select id="currencySign" disable-unless-format="currency">
+            <option value="">(None)</option>
+            <option value="standard">Standard</option>
+            <option value="accounting">Accounting</option>
+          </select>
+          <br />
+
+          <label for="unitDisplay">Unit Display:</label>
+          <select id="unitDisplay" disable-unless-format="unit">
+            <option value="">(None)</option>
+            <option value="short">Short</option>
+            <option value="narrow">Narrow</option>
+            <option value="long">Long</option>
+          </select>
+          <br />
+
+          <label for="notation">Notation:</label>
+          <select id="notation">
+            <option value="">(None)</option>
+            <option value="standard">Standard</option>
+            <option value="scientific">Scientific</option>
+            <option value="engineering">Engineering</option>
+            <option value="compact">Compact</option>
+          </select>
+          <br />
+
+          <label for="compactDisplay">Compact Display:</label>
+          <select id="compactDisplay">
+            <option value="">(None)</option>
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+          </select>
+          <br />
+
+          <label for="signDisplay">Sign Display:</label>
+          <select id="signDisplay">
+            <option value="">(None)</option>
+            <option value="auto">Auto</option>
+            <option value="always">Always</option>
+            <option value="exceptZero">Except Zero</option>
+            <option value="negative">Negative</option>
+            <option value="never">Never</option>
+          </select>
+          <br />
+
+          <label for="useGrouping">Use Grouping:</label>
+          <select id="useGrouping">
+            <option value="">(None)</option>
+            <option value="auto">Auto</option>
+            <option value="always">Always</option>
+            <option value="min2">Minimum 2</option>
+            <option value="false">False</option>
+          </select>
+          <br />
+
+          <label for="minimumIntegerDigits">Minimum Integer Digits:</label>
+          <select id="minimumIntegerDigits" data-type="number">
+            <option value="">(None)</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <br />
+
+          <label for="minimumFractionDigits">Minimum Fraction Digits:</label>
+          <select id="minimumFractionDigits" data-type="number">
+            <option value="">(None)</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <br />
+
+          <label for="maximumFractionDigits">Maximum Fraction Digits:</label>
+          <select id="maximumFractionDigits" data-type="number">
+            <option value="">(None)</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <br />
+
+          <label for="minimumSignificantDigits">Minimum Significant Digits:</label>
+          <select id="minimumSignificantDigits" data-type="number">
+            <option value="">(None)</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <br />
+
+          <label for="maximumSignificantDigits">Maximum Significant Digits:</label>
+          <select id="maximumSignificantDigits" data-type="number">
+            <option value="">(None)</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <br />
+
+          <label for="roundingPriority">Rounding Priority:</label>
+          <select id="roundingPriority">
+            <option value="">(None)</option>
+            <option value="auto">Auto</option>
+            <option value="morePrecision">More Precision</option>
+            <option value="lessPrecision">Less Precision</option>
+          </select>
+          <br />
+
+          <label for="roundingMode">Rounding Mode:</label>
+          <select id="roundingMode">
+            <option value="">(None)</option>
+            <option value="ceil">Ceil</option>
+            <option value="floor">Floor</option>
+            <option value="expand">Expand</option>
+            <option value="trunc">Truncate</option>
+            <option value="halfCeil">Half Ceil</option>
+            <option value="halfFloor">Half Floor</option>
+            <option value="halfExpand">Half Expand</option>
+            <option value="halfTrunc">Half Truncate</option>
+            <option value="halfEven">Half Even</option>
+          </select>
+          <br />
+
+          <label for="trailingZeroDisplay">Trailing Zero Display:</label>
+          <select id="trailingZeroDisplay">
+            <option value="">(None)</option>
+            <option value="auto">Auto</option>
+            <option value="stripIfInteger">Strip If Integer</option>
+          </select>
+        </fieldset>
+      </fieldset>
+    </form>
+
+    <script>
+      const data = document.getElementById("formatted");
+      const localeSelect = document.getElementById("locale");
+      const valueInput = document.getElementById("value");
+      const formatSelect = document.getElementById("format");
+      const currencySelect = document.getElementById("currency");
+      const unitSelect = document.getElementById("unit");
+      const optionElements = document.querySelectorAll("#options select");
+      const locales = {
+        "en-US": "English (United States)",
+        "en-GB": "English (United Kingdom)",
+        "fr-FR": "French (France)",
+        "fr-CA": "French (Canada)",
+        "es-ES": "Spanish (Spain)",
+        "de-DE": "German (Germany)",
+        "ja-JP": "Japanese (Japan)",
+        "zh-CN": "Chinese (Simplified, China)",
+      };
+
+      for (const [locale, label] of Object.entries(locales)) {
+        const option = document.createElement("option");
+        option.value = locale;
+        option.textContent = label;
+        localeSelect.appendChild(option);
+      }
+
+      Intl.supportedValuesOf("currency").forEach((currency) => {
+        const option = document.createElement("option");
+        option.value = currency;
+        option.textContent = currency;
+        currencySelect.appendChild(option);
+      });
+      currencySelect.value = "USD";
+
+      Intl.supportedValuesOf("unit").forEach((unit) => {
+        const option = document.createElement("option");
+        option.value = unit;
+        option.textContent = unit;
+        unitSelect.appendChild(option);
+      });
+      unitSelect.value = "kilometer";
+
+      function updateOptions() {
+        const options = {};
+        optionElements.forEach((element) => {
+          if (!element.disabled && element.value) {
+            options[element.id] =
+              element.dataset.type === "number"
+                ? Number(element.value)
+                : element.value === "false"
+                  ? false
+                  : element.value;
+          }
+        });
+        data.intlOptions = options;
+      }
+
+      function updateFormat() {
+        const format = formatSelect.value;
+        document.querySelectorAll("[show-if-currency]").forEach((element) => {
+          element.style.display = format === "currency" ? "inline" : "none";
+        });
+        document.querySelectorAll("[show-if-unit]").forEach((element) => {
+          element.style.display = format === "unit" ? "inline" : "none";
+        });
+        document.querySelectorAll("[disable-unless-format]").forEach((element) => {
+          const enabled = element.getAttribute("disable-unless-format") === format;
+          element.disabled = !enabled;
+          if (!enabled) {
+            element.value = "";
+          }
+        });
+        data.intlFormat = format;
+        if (format === "currency") {
+          data.intlCurrency = currencySelect.value;
+        } else {
+          data.removeAttribute("intl-currency");
+        }
+        if (format === "unit") {
+          data.intlUnit = unitSelect.value;
+        } else {
+          data.removeAttribute("intl-unit");
+        }
+        updateOptions();
+      }
+
+      localeSelect.addEventListener("change", () => {
+        if (localeSelect.value) {
+          document.documentElement.lang = localeSelect.value;
+        } else {
+          document.documentElement.removeAttribute("lang");
+        }
+        data.value = valueInput.value;
+      });
+      valueInput.addEventListener("input", () => {
+        data.value = valueInput.value;
+      });
+      formatSelect.addEventListener("change", updateFormat);
+      currencySelect.addEventListener("change", () => {
+        if (formatSelect.value === "currency") {
+          data.intlCurrency = currencySelect.value;
+        }
+      });
+      unitSelect.addEventListener("change", () => {
+        if (formatSelect.value === "unit") {
+          data.intlUnit = unitSelect.value;
+        }
+      });
+      optionElements.forEach((element) => {
+        element.addEventListener("change", updateOptions);
+      });
+
+      updateFormat();
+    </script>
+  </body>
+</html>

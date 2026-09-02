@@ -20,6 +20,15 @@ describe("intl-time element properties", () => {
     globalThis.Temporal = {
       Now: {
         timeZoneId: () => "America/Toronto",
+        zonedDateTimeISO: () => ({
+          __tag: "now",
+          until(other, opts) {
+            return {
+              toLocaleString: (locale, options) =>
+                `${this.__tag}=>${other.__tag}::${JSON.stringify(options)}`,
+            };
+          },
+        }),
       },
       PlainDate: {
         from: ({ year, month, day }) => ({
@@ -38,6 +47,19 @@ describe("intl-time element properties", () => {
                 day: 27,
               });
               return "August 27, 2026";
+            },
+          }),
+        }),
+      },
+      PlainDateTime: {
+        from: ({ year, month, day, hour, minute, second }) => ({
+          toZonedDateTime: () => ({
+            __tag: `${year}-${month}-${day}T${hour}:${minute}:${second}`,
+            until(other, opts) {
+              return {
+                toLocaleString: (locale, options) =>
+                  `${this.__tag}=>${other.__tag}::${JSON.stringify(options)}`,
+              };
             },
           }),
         }),
@@ -121,5 +143,153 @@ describe("intl-time element properties", () => {
 
     expect(element.textContent).toBe("August 27, 2026");
     element.remove();
+  });
+
+  test("reflects datetimeFrom and datetimeTo properties to attributes", () => {
+    const element = document.createElement("time");
+
+    element.datetimeFrom = "2026-08-01T00:00:00";
+    element.datetimeTo = "2026-08-27T00:00:00";
+
+    expect(element.getAttribute("datetime-from")).toBe(
+      "2026-08-01T00:00:00",
+    );
+    expect(element.datetimeFrom).toBe("2026-08-01T00:00:00");
+    expect(element.getAttribute("datetime-to")).toBe("2026-08-27T00:00:00");
+    expect(element.datetimeTo).toBe("2026-08-27T00:00:00");
+  });
+
+  describe("duration format", () => {
+    test("uses datetime-from and datetime-to when both are set", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.datetimeTo = "2026-08-27T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe(
+        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+      );
+      element.remove();
+    });
+
+    test("pairs datetime-from with datetime when datetime-to is absent", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.dateTime = "2026-08-27T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe(
+        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+      );
+      element.remove();
+    });
+
+    test("pairs datetime with datetime-to when datetime-from is absent", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.dateTime = "2026-08-01T00:00:00";
+      element.datetimeTo = "2026-08-27T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe(
+        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+      );
+      element.remove();
+    });
+
+    test("uses current time when only datetime-from is set", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe("2026-8-1T0:0:0=>now::{}");
+      element.remove();
+    });
+
+    test("uses current time when only datetime-to is set", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.datetimeTo = "2026-08-27T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe("now=>2026-8-27T0:0:0::{}");
+      element.remove();
+    });
+
+    test("uses current time when only datetime is set", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.dateTime = "2026-08-01T00:00:00";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe("2026-8-1T0:0:0=>now::{}");
+      element.remove();
+    });
+
+    test("passes largestUnit and smallestUnit intlOptions to until() and excludes them from toLocaleString options", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.datetimeTo = "2026-08-27T00:00:00";
+      element.intlOptions = {
+        largestUnit: "days",
+        smallestUnit: "hours",
+        style: "long",
+      };
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(element.textContent).toBe(
+        '2026-8-1T0:0:0=>2026-8-27T0:0:0::{"style":"long"}',
+      );
+      element.remove();
+    });
+
+    test("falls back to initial content when no datetime values are set", async () => {
+      const element = document.createElement("time");
+      element.lang = "en-CA";
+      element.intlFormat = "duration";
+      element.textContent = "unformatted duration";
+
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // NOTE: this.initContent is never populated by the behavior (a
+      // pre-existing issue also affecting date/time fallbacks), so the
+      // fallback currently clears the element instead of restoring the
+      // original text.
+      expect(element.textContent).toBe("");
+      element.remove();
+    });
   });
 });

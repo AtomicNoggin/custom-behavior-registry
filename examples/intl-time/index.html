@@ -12,56 +12,128 @@
         }
       }
     </script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem auto;
+        max-width: 48rem;
+      }
+    </style>
     <script type="module" src="./index.js"></script>
   </head>
   <body>
+    <h1>IntlTime test harness</h1>
+    <h2>
+      Intl-Time :
+      <time intl-format="datetime"></time>
+    </h2>
+
     <form>
       <fieldset>
-        <label for="locale">Locale:</label>
+        <legend>Intl-Time Attributes</legend>
+        <label for="locale">HTML lang:</label>
         <select id="locale">
-          <option value="">(Auto)</option></select
+          <option value="">(None)</option></select
         ><br />
-        <label for="datetime">Datetime:</label>
-        <input id="datetime" type="datetime-local" value="" />
-        <button id="clear-datetime" type="button">Clear</button><br />
-        <label for="format">Format:</label>
+        <label for="format">TIME intl-format:</label>
         <select id="format">
           <option value="datetime">Datetime</option>
           <option value="date">Date</option>
           <option value="time">Time</option>
+          <option value="duration">Duration</option>
         </select>
-        <select disable-if-format="time" id="dateStyle" aria-label="Date Style">
-          <option value="">(Auto)</option>
-          <option value=" full">Full</option>
-          <option value=" long">Long</option>
-          <option value=" medium">Medium</option>
-          <option value=" short">Short</option>
-        </select>
-        <select disable-if-format="date" id="timeStyle" aria-label="Time Style">
-          <option value="">(Auto)</option>
-          <option value=" full">Full</option>
-          <option value=" long">Long</option>
-          <option value=" medium">Medium</option>
-          <option value=" short">Short</option></select
+        <span hide-if-duration>
+          <select
+            disable-if-format="time"
+            hide-if-duration
+            id="dateStyle"
+            aria-label="Date Style"
+          >
+            <option value="">(None)</option>
+            <option value=" full">Full</option>
+            <option value=" long">Long</option>
+            <option value=" medium">Medium</option>
+            <option value=" short">Short</option>
+          </select>
+          <select
+            disable-if-format="date"
+            hide-if-duration
+            id="timeStyle"
+            aria-label="Time Style"
+          >
+            <option value="">(None)</option>
+            <option value=" full">Full</option>
+            <option value=" long">Long</option>
+            <option value=" medium">Medium</option>
+            <option value=" short">Short</option>
+          </select></span
+        >
+        <span show-if-duration style="display:none">
+          <select id="durationStyle" aria-label="Duration Style">
+            <option value="">(None)</option>
+            <option value=" long">Long</option>
+            <option value=" short">Short</option>
+            <option value=" narrow">Narrow</option>
+            <option value=" digital">Digital</option>
+          </select>
+          <select id="smallestUnit" aria-label="Smallest Unit">
+            <option value="">(None)</option>
+            <option value=" nanoseconds">Nanoseconds</option>
+            <option value=" microseconds">Microseconds</option>
+            <option value=" milliseconds">Milliseconds</option>
+            <option value=" seconds">Seconds</option>
+            <option value=" minutes">Minutes</option>
+            <option value=" hours">Hours</option>
+            <option value=" days">Days</option>
+            <option value=" weeks">Weeks</option>
+            <option value=" months">Months</option>
+            <option value=" years">Years</option>
+          </select>
+          <select id="largestUnit" aria-label="Largest Unit">
+            <option value="">(None)</option>
+            <option value=" years">Years</option>
+            <option value=" months">Months</option>
+            <option value=" weeks">Weeks</option>
+            <option value=" days">Days</option>
+            <option value=" hours">Hours</option>
+            <option value=" minutes">Minutes</option>
+            <option value=" seconds">Seconds</option>
+            <option value=" milliseconds">Milliseconds</option>
+            <option value=" microseconds">Microseconds</option>
+            <option value=" nanoseconds">Nanoseconds</option>
+          </select> </span
         ><br />
-        <fieldset id="options">
-          <legend>Options</legend>
+        <label for="datetime">TIME datetime:</label>
+        <input id="datetime" type="datetime-local" value="" />
+        <button id="clear-datetime" type="button">Clear</button><br />
+        <div show-if-duration style="display:none">
+          <label for="datetime-from">TIME datetime-from:</label>
+          <input id="datetime-from" type="datetime-local" value="" />
+          <button id="clear-datetime-from" type="button">Clear</button><br />
+        </div>
+        <div show-if-duration style="display:none">
+          <label for="datetime-to">TIME datetime-to:</label>
+          <input id="datetime-to" type="datetime-local" value="" />
+          <button id="clear-datetime-to" type="button">Clear</button><br />
+        </div>
+        <fieldset id="options" hide-if-duration>
+          <legend>TIME intl-options</legend>
           <label for="weekday">Weekday:</label>
           <select disable-if-format="time" disable-if-style id="weekday">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="narrow">Narrow</option>
             <option value="short">Short</option>
             <option value="long">Long</option></select
           ><br />
           <label for="year">Year:</label>
           <select disable-if-format="time" disable-if-style id="year">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option></select
           ><br />
           <label for="month">Month:</label>
           <select disable-if-format="time" disable-if-style id="month">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option>
             <option value="narrow">Narrow</option>
@@ -70,25 +142,25 @@
           ><br />
           <label for="day">Day:</label>
           <select disable-if-format="time" disable-if-style id="day">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option></select
           ><br />
           <label for="hour">Hour:</label>
           <select disable-if-format="date" disable-if-style id="hour">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option></select
           ><br />
           <label for="minute">Minute:</label>
           <select disable-if-format="date" disable-if-style id="minute">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option></select
           ><br />
           <label for="second">Second:</label>
           <select disable-if-format="date" disable-if-style id="second">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="numeric">Numeric</option>
             <option value="2-digit">2-Digit</option></select
           ><br />
@@ -98,7 +170,7 @@
             disable-if-style
             id="fractionalSecondDigits"
           >
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option></select
@@ -112,7 +184,7 @@
           /><br />
           <label for="hourCycle">Hour Cycle:</label>
           <select disable-if-format="date" disable-if-style id="hourCycle">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="h11">h11</option>
             <option value="h12">h12</option>
             <option value="h23">h23</option>
@@ -120,34 +192,177 @@
           ><br />
           <label for="timeZone">Time Zone:</label>
           <select id="timeZone">
-            <option value="">(Auto)</option>
-          </select><br />
+            <option value="">(None)</option></select
+          ><br />
           <label for="timeZoneName">Time Zone Name:</label>
           <select disable-if-format="date" disable-if-style id="timeZoneName">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="short">Short</option>
             <option value="long">Long</option></select
           ><br />
           <label for="era">Era:</label>
           <select disable-if-format="time" disable-if-style id="era">
-            <option value="">(Auto)</option>
+            <option value="">(None)</option>
             <option value="narrow">Narrow</option>
             <option value="short">Short</option>
             <option value="long">Long</option></select
           ><br />
         </fieldset>
       </fieldset>
+      <fieldset id="durationOptions" show-if-duration style="display:none">
+        <legend>TIME intl-options</legend>
+        <label for="yearsDisplay">Years Display:</label>
+        <select id="yearsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="years">Years:</label>
+        <select id="years">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="monthsDisplay">Months Display:</label>
+        <select id="monthsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="months">Months:</label>
+        <select id="months">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="daysDisplay">Days Display:</label>
+        <select id="daysDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="days">Days:</label>
+        <select id="days">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="hoursDisplay">Hours Display:</label>
+        <select id="hoursDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="hours">Hours:</label>
+        <select id="hours">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="minutesDisplay">Minutes Display:</label>
+        <select id="minutesDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="minutes">Minutes:</label>
+        <select id="minutes">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="secondsDisplay">Seconds Display:</label>
+        <select id="secondsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="seconds">Seconds:</label>
+        <select id="seconds">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="millisecondsDisplay">Milliseconds Display:</label>
+        <select id="millisecondsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="milliseconds">Milliseconds:</label>
+        <select id="milliseconds">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="microsecondsDisplay">Microseconds Display:</label>
+        <select id="microsecondsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="microseconds">Microseconds:</label>
+        <select id="microseconds">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="nanosecondsDisplay">Nanoseconds Display:</label>
+        <select id="nanosecondsDisplay">
+          <option value="">(None)</option>
+          <option value="always">Always</option>
+          <option value="auto">Auto</option></select
+        ><br />
+        <label for="nanoseconds">Nanoseconds:</label>
+        <select id="nanoseconds">
+          <option value="">(None)</option>
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+          <option value="narrow">Narrow</option></select
+        ><br />
+        <label for="fractionalDigits">Fractional Digits:</label>
+        <select id="fractionalDigits">
+          <option value="">(None)</option>
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option></select
+        ><br />
+      </fieldset>
     </form>
-    <big>Intl-Time : <time intl-format="datetime"></time></big>
     <script>
       const localeSelect = document.getElementById("locale");
       const datetimeInput = document.getElementById("datetime");
       const clearButton = document.getElementById("clear-datetime");
+      const datetimeFromInput = document.getElementById("datetime-from");
+      const clearFromButton = document.getElementById("clear-datetime-from");
+      const datetimeToInput = document.getElementById("datetime-to");
+      const clearToButton = document.getElementById("clear-datetime-to");
       const formatSelect = document.getElementById("format");
+      const durationStyleSelect = document.getElementById("durationStyle");
+      const smallestUnitSelect = document.getElementById("smallestUnit");
+      const largestUnitSelect = document.getElementById("largestUnit");
       const dateStyleSelect = document.getElementById("dateStyle");
       const timeStyleSelect = document.getElementById("timeStyle");
       const optionElements = document.querySelectorAll(
         "#options :is(select, input)",
+      );
+      const durationOptionsElement = document.querySelectorAll(
+        "#durationOptions :is(select, input)",
       );
       const locales = {
         "en-US": "English (United States)",
@@ -167,39 +382,66 @@
         option.textContent = tz;
         timeZoneSelect.appendChild(option);
       });
-      const updateOptions = () => {
+      const updateOptions = (format) => {
         let newOptions = {};
-        optionElements.forEach((el) => {
-          if (!el.disabled) {
-            if (el.type === "checkbox") {
-              newOptions[el.id] = el.checked;
-            } else if (el.value) {
-              newOptions[el.id] = el.value;
+        if (format === "duration") {
+          durationOptionsElement.forEach((el) => {
+            if (!el.disabled) {
+              if (el.type === "checkbox") {
+                newOptions[el.id] = el.checked;
+              } else if (el.value) {
+                newOptions[el.id] = el.value;
+              }
             }
-          }
-        });
+          });
+        } else {
+          optionElements.forEach((el) => {
+            if (!el.disabled) {
+              if (el.type === "checkbox") {
+                newOptions[el.id] = el.checked;
+              } else if (el.value) {
+                newOptions[el.id] = el.value;
+              }
+            }
+          });
+        }
         document.querySelector("time").intlOptions = newOptions;
       };
       const setFormat = () => {
-        const formatValue =
-          formatSelect.value +
-          (!dateStyleSelect.disabled ? dateStyleSelect.value : "") +
-          (!timeStyleSelect.disabled ? timeStyleSelect.value : "");
-        updateOptions();
+        const format = formatSelect.value;
+        let formatValue;
+        if (format === "duration") {
+          formatValue =
+            format +
+            durationStyleSelect.value +
+            smallestUnitSelect.value +
+            largestUnitSelect.value;
+        } else {
+          formatValue =
+            format +
+            (!dateStyleSelect.disabled ? dateStyleSelect.value : "") +
+            (!timeStyleSelect.disabled ? timeStyleSelect.value : "");
+        }
+        updateOptions(format);
         document.querySelector("time").intlFormat = formatValue;
       };
       const styleChangeHandler = (event) => {
-        const hasStyle = !!dateStyleSelect.value || !!timeStyleSelect.value;
-        const styleDisable = document.querySelectorAll(`[disable-if-style]`);
-        styleDisable.forEach((el) => {
-          if (hasStyle) {
-            el.disabled = true;
-            el.value = "";
-          } else {
-            el.disabled = false;
-          }
-        });
-        setFormat();
+        const format = formatSelect.value;
+        if (format === "duration") {
+          setFormat();
+        } else {
+          const hasStyle = !!dateStyleSelect.value || !!timeStyleSelect.value;
+          const styleDisable = document.querySelectorAll(`[disable-if-style]`);
+          styleDisable.forEach((el) => {
+            if (hasStyle) {
+              el.disabled = true;
+              el.value = "";
+            } else {
+              el.disabled = false;
+            }
+          });
+          setFormat(format);
+        }
       };
       for (const [locale, label] of Object.entries(locales)) {
         const option = document.createElement("option");
@@ -219,26 +461,65 @@
         datetimeInput.value = "";
         document.querySelector("time").dateTime = "";
       });
+      clearFromButton.addEventListener("click", () => {
+        datetimeFromInput.value = "";
+        document.querySelector("time").dateTimeFrom = "";
+      });
+      clearToButton.addEventListener("click", () => {
+        datetimeToInput.value = "";
+        document.querySelector("time").dateTimeTo = "";
+      });
       datetimeInput.addEventListener("input", (event) => {
         console.log("datetime input changed to:", event.target.value);
         document.querySelector("time").dateTime = event.target.value;
       });
+      datetimeFromInput.addEventListener("input", (event) => {
+        console.log("datetime from input changed to:", event.target.value);
+        document.querySelector("time").dateTimeFrom = event.target.value;
+      });
+      datetimeToInput.addEventListener("input", (event) => {
+        console.log("datetime to input changed to:", event.target.value);
+        document.querySelector("time").dateTimeTo = event.target.value;
+      });
       formatSelect.addEventListener("change", (event) => {
         const selectedFormat = event.target.value;
-        const formatDisable = document.querySelectorAll(`[disable-if-format]`);
-        formatDisable.forEach((el) => {
-          if (el.getAttribute("disable-if-format") === selectedFormat) {
-            el.disabled = true;
-            el.value = "";
-          } else {
-            el.disabled = false;
-          }
-        });
+          const durationHideElements = document.querySelectorAll(`[hide-if-duration]`);
+          const durationShowElements = document.querySelectorAll(`[show-if-duration]`);
+        if (selectedFormat === "duration") {
+          durationHideElements.forEach((el) => {
+            el.style.display = "none";
+          });
+          durationShowElements.forEach((el) => {
+            el.style.display = "block";
+          });
+        } else {
+          durationHideElements.forEach((el) => {
+            el.style.display = "block";
+          });
+          durationShowElements.forEach((el) => {
+            el.style.display = "none";
+          });
+          const formatDisable = document.querySelectorAll(`[disable-if-format]`);
+          formatDisable.forEach((el) => {
+            if (el.getAttribute("disable-if-format") === selectedFormat) {
+              el.disabled = true;
+              el.value = "";
+            } else {
+              el.disabled = false;
+            }
+          });
+        }
         setFormat();
       });
       dateStyleSelect.addEventListener("change", styleChangeHandler);
       timeStyleSelect.addEventListener("change", styleChangeHandler);
+      durationStyleSelect.addEventListener("change", styleChangeHandler);
+      smallestUnitSelect.addEventListener("change", styleChangeHandler);
+      largestUnitSelect.addEventListener("change", styleChangeHandler);
       optionElements.forEach((el) => {
+        el.addEventListener("change", updateOptions);
+      });
+      durationOptionsElement.forEach((el) => {
         el.addEventListener("change", updateOptions);
       });
     </script>

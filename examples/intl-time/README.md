@@ -2,16 +2,25 @@
 
 An HTML-first date and time formatter built with `CustomBehaviorRegistry`, using the markup demonstrated in the [Intl Time CodePen](https://codepen.io/AtomicNoggin/pen/ogLzgPW).
 
-The behavior formats native `<time>` elements using their `datetime` value, the closest valid `lang` attribute, and `Intl.DateTimeFormat` options supplied as attributes.
+The behavior adds the custom attibute `intl-format` to native `<time>` elements to to display locale specific dates and times using their `datetime` value, the closest valid `lang` attribute, and `Intl.DateTimeFormat` options supplied as attributes. 
 
 ```html
 <section lang="en-CA">
-  <time datetime="2026-08-27T19:30:00-04:00" intl-format="datetime long short">
+  <time intl-format="datetime long short" datetime="2026-08-27T19:30:00-04:00">
     August 27, 2026 at 7:30 PM
   </time>
 
-  <time datetime="2026-08-27" intl-format="date long">August 27, 2026</time>
-  <time datetime="19:30" intl-format="time short">7:30 PM</time>
+  <time intl-format="date long" datetime="2026-08-27">August 27, 2026</time>
+  <time  intl-format="time short" datetime="19:30">7:30 PM</time>
+
+</section>
+```
+
+Alternately you can also display thr duration between to time values
+
+```html
+<section lang="en-CA">
+  <time intl-format="duration narrow" datetime="2026-08-30T10:03" datetime-to="2026-09-12T01:09">12d 15h 6m</time>
 </section>
 ```
 
@@ -27,17 +36,31 @@ Load the registry and a `Temporal` implementation before loading [`index.js`](in
 <script src="./examples/intl-time/index.js"></script>
 ```
 
-## Formatting
+## Formatting Dates & Times
 
-`intl-format` accepts `date`, `time`, or `datetime`. Add a date style and, for `datetime`, a time style:
+`intl-format` accepts `date`, `time`, or `datetime`. Optionally, you can add a date style and, for `datetime`, a time style:
 
 ```html
 <time datetime="2026-08-27T19:30" intl-format="datetime full short"></time>
 ```
 
-When no individual fields are given, the formatter uses `short` styles.
+### intl-options
+If you don't use the style short-hand variables, you can use `intl-options` to pass in `Intl.DateTimeFormat`  [parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#parameters). Its value is a JavaScript literal notation object with the outer `{}` omitted:
 
-Use `intl-skeleton` to select individual fields with a Unicode date-field skeleton:
+```html
+<time
+  datetime="2026-08-27T19:30:00-04:00"
+  intl-options="year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Toronto',timeZoneName:'short'"
+></time>
+```
+
+In JavaScript, `element.intlOptions` will read and write the same object:
+
+```js
+element.intlOptions = { month: "long", timeZone: "America/Toronto" };
+```
+### intl-skeleton
+Aside from `intl-options` you can use `intl-skeleton` to select individual fields with a Unicode date-field skeleton:
 
 ```html
 <time
@@ -80,22 +103,44 @@ Use `intl-skeleton` to select individual fields with a Unicode date-field skelet
 
 Punctuation and text in single quotes are ignored. When a skeleton repeats a field, its first recognized token supplies that field's option.
 
-Use `intl-options` for a simple `Intl.DateTimeFormat` options object. Its value is strict-mode JSLN with the outer `{}` omitted:
+Explicit `intl-options` values override fields derived from `intl-skeleton`.
+
+## Formatting duration
+
+Set `intl-format="duration"` to display the elapsed duration between two
+date/time values. The behavior selects endpoints in this order:
+
+1. `datetime-from` and `datetime-to`
+2. `datetime-from` and `datetime`
+3. `datetime` and `datetime-to`
+
+When only one of `datetime-from`, `datetime`, or `datetime-to` is set, the
+missing endpoint is the current date and time. `intl-options` may include a default style,
+`largestUnit` and/or `smallestUnit` to control the calculated duration;
 
 ```html
 <time
-  datetime="2026-08-27T19:30:00-04:00"
-  intl-options="year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Toronto',timeZoneName:'short'"
+  datetime-from="2026-08-01T00:00:00"
+  datetime-to="2026-08-27T12:00:00"
+  intl-format="duration short seconds days"
 ></time>
 ```
-
-In JavaScript, `element.intlOptions` reads and writes the same object:
+In JavaScript `element.dateTimeTo` and `element.dateTimeFrom` can also be used to set the secondary datetime values.
 
 ```js
-element.intlOptions = { month: "long", timeZone: "America/Toronto" };
+  element.dateTimeTo = new Date().toISOString();
 ```
 
-Explicit `intl-options` values override fields derived from `intl-skeleton`.
+### intl-options
+If you don't use the style short-hand variables, you can use `intl-options` to pass in `Intl.DurationFormat`  [parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DurationFormat/DurationFormat#parameters). Its value is a JavaScript literal notation object with the outer `{}` omitted:
+
+```html
+<time
+  datetime-from="2026-08-01T00:00:00"
+  datetime-to="2026-08-27T12:00:00"
+  intl-options="years:'narrow',months:'narrow',days:'narrow',hours:'long',minutes:'long'"
+></time>
+```
 
 ## Locale
 
@@ -111,8 +156,10 @@ The closest ancestor with a valid `lang` value controls the locale. Updating tha
 
 | Attribute | Description |
 | --- | --- |
+| `intl-format` | for dates, `date`, `time`, or `datetime`, optionally followed by style names; or `duration` optionally followed by duratiion style, smallestDisplayUnit, and/or largestDisplayUnit|
 | `datetime` | An ISO 8601 date, time, date-time, instant, or zoned date-time. |
-| `intl-format` | `date`, `time`, or `datetime`, optionally followed by style names. |
+| `datetime-to` | An optional ISO 8601 date, time, date-time, instant, or zoned date-time. to calculate the duration |
+| `datetime-from` | An optional ISO 8601 date, time, date-time, instant, or zoned date-time. to calculate the duration |
+| `intl-options` | A JavaScript literal notation object without its outer `{}`. |
 | `intl-skeleton` | A Unicode date-field skeleton. |
-| `intl-options` | A strict-mode JSLN options object without its outer `{}`. |
-| `lang` | The inherited locale used for formatting. |
+| `lang` | The inherited locale used for formatting. if Omitted, it will pull in an ancestor lang value, or use browser defaults if none found |

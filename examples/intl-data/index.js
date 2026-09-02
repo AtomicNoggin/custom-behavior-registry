@@ -1,57 +1,62 @@
-import JSLN from "jsln";
+import { closestLocale } from "../intl-common.js";
 
-const intlOptionsProperty = {
-  configurable: true,
-  enumerable: true,
-  get() {
-    const options = this.getAttribute("intl-options");
-    return options === null
-      ? {}
-      : JSLN.parse(`{${options}}`, { strictMode: true });
-  },
-  set(value) {
-    if (
-      value === null ||
-      typeof value !== "object" ||
-      Array.isArray(value) ||
-      (Object.getPrototypeOf(value) !== Object.prototype &&
-        Object.getPrototypeOf(value) !== null)
-    ) {
-      throw new TypeError("intlOptions must be a simple options object");
-    }
-    const jsln = JSLN.stringify(value);
-    this.setAttribute("intl-options", jsln.slice(1, -1));
-  },
-};
+const ALLOWED_FORMATS = ["number", "decimal", "currency", "percent", "unit"];
 
-Object.defineProperty(HTMLDataElement.prototype, "intlOptions", intlOptionsProperty);
-
-Object.defineProperty(HTMLDataElement.prototype, "intlFormat", {
-  configurable: true,
-  enumerable: true,
-  get() {
-    return this.getAttribute("intl-format") || "";
+Object.defineProperties(HTMLDataElement.prototype, {
+  intlFormat: {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return this.getAttribute("intl-format") || "";
+    },
+    set(value) {
+      if (ALLOWED_FORMATS.includes(value)) {
+        this.setAttribute("intl-format", String(value));
+      } else {
+        console.error(
+          `Unexpected intl-format value '${value}'. Please use one of the following: ${ALLOWED_FORMATS.join(
+            ", "
+          )}.`
+        );
+      }
+    },
   },
-  set(value) {
-    this.setAttribute("intl-format", String(value));
+  intlCurrency: {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return this.getAttribute("intl-currency") || "";
+    },
+    set(value) {
+      if (Intl.supportedValuesOf("currency").includes(value)) {
+        this.setAttribute("intl-currency", String(value));
+      } else {
+        console.error(
+          `Unexpected intl-currency value '${value}'. Please use a valid currency from Intl.supportedValuesOf("currency").`
+        );
+      }
+    },
+  },
+  intlUnit: {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return this.getAttribute("intl-unit") || "";
+    },
+    set(value) {
+      if (Intl.supportedValuesOf("unit").includes(value)) {
+        this.setAttribute("intl-unit", String(value));
+      } else {
+        console.error(
+          `Unexpected intl-unit value '${value}'. Please use a valid unit from Intl.supportedValuesOf("unit").`
+        );
+      }
+    },
   },
 });
 
-const closestLocale = (element) => {
-  let current = element;
-  while (current) {
-    if (current.lang) {
-      try {
-        return Intl.getCanonicalLocales(current.lang);
-      } catch {}
-    }
-    current = current.parentElement;
-  }
-  return navigator.languages;
-};
-
-class IntlNumber {
-  static observedAttributes = ["intl-format", "intl-options", "value", "lang"];
+class IntlData {
+  static observedAttributes = ["intl-format", "intl-currency", "intl-unit", "intl-options", "value"];
 
   constructor(element) {
     this.initialContent = element.textContent;
@@ -59,9 +64,24 @@ class IntlNumber {
 
   format(element) {
     const value = Number(element.value);
+    const format = element.intlFormat;
+    const options = { ...(element.intlOptions || {}) };
+
+    if (["decimal", "currency", "percent", "unit"].includes(format)) {
+      options.style = format;
+    }
+
+    if (format === "currency" && element.hasAttribute("intl-currency")) {
+      options.currency = element.getAttribute("intl-currency");
+    }
+
+    if (format === "unit" && element.hasAttribute("intl-unit")) {
+      options.unit = element.getAttribute("intl-unit");
+    }
+
     element.textContent = Number.isNaN(value)
       ? this.initialContent
-      : new Intl.NumberFormat(closestLocale(element), element.intlOptions).format(value);
+      : new Intl.NumberFormat(closestLocale(element), options).format(value);
   }
 
   connectedCallback(element) {
@@ -77,11 +97,5 @@ class IntlNumber {
   }
 }
 
-const registry =
-  window.customBehavior ||
-  new CustomBehaviorRegistry({
-    attributeFilter: ["intl-format", "intl-options", "value", "lang"],
-  });
-
-window.customBehavior = registry;
-registry.define('data[intl-format="number"]', IntlNumber);
+const registry = window.customBehavior;
+registry.define("intl-data-format", IntlData, { asTag: "data" });
