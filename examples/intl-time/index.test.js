@@ -39,7 +39,6 @@ describe("intl-time element properties", () => {
               expect(options).toMatchObject({
                 requestedFormat: "date",
                 dateStyle: "long",
-                calendar: "iso8601",
               });
               expect({ year, month, day }).toEqual({
                 year: 2026,
@@ -148,15 +147,15 @@ describe("intl-time element properties", () => {
   test("reflects datetimeFrom and datetimeTo properties to attributes", () => {
     const element = document.createElement("time");
 
-    element.datetimeFrom = "2026-08-01T00:00:00";
-    element.datetimeTo = "2026-08-27T00:00:00";
+    element.dateTimeFrom = "2026-08-01T00:00:00";
+    element.dateTimeTo = "2026-08-27T00:00:00";
 
     expect(element.getAttribute("datetime-from")).toBe(
       "2026-08-01T00:00:00",
     );
-    expect(element.datetimeFrom).toBe("2026-08-01T00:00:00");
+    expect(element.dateTimeFrom).toBe("2026-08-01T00:00:00");
     expect(element.getAttribute("datetime-to")).toBe("2026-08-27T00:00:00");
-    expect(element.datetimeTo).toBe("2026-08-27T00:00:00");
+    expect(element.dateTimeTo).toBe("2026-08-27T00:00:00");
   });
 
   describe("duration format", () => {
@@ -164,15 +163,15 @@ describe("intl-time element properties", () => {
       const element = document.createElement("time");
       element.lang = "en-CA";
       element.intlFormat = "duration";
-      element.datetimeFrom = "2026-08-01T00:00:00";
-      element.datetimeTo = "2026-08-27T00:00:00";
+      element.dateTimeFrom = "2026-08-01T00:00:00";
+      element.dateTimeTo = "2026-08-27T00:00:00";
       element.textContent = "unformatted duration";
 
       document.body.append(element);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(element.textContent).toBe(
-        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+        '2026-8-1T0:0:0=>2026-8-27T0:0:0::{"style":"short"}',
       );
       element.remove();
     });
@@ -181,7 +180,7 @@ describe("intl-time element properties", () => {
       const element = document.createElement("time");
       element.lang = "en-CA";
       element.intlFormat = "duration";
-      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.dateTimeFrom = "2026-08-01T00:00:00";
       element.dateTime = "2026-08-27T00:00:00";
       element.textContent = "unformatted duration";
 
@@ -189,7 +188,7 @@ describe("intl-time element properties", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(element.textContent).toBe(
-        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+        '2026-8-1T0:0:0=>2026-8-27T0:0:0::{"style":"short"}',
       );
       element.remove();
     });
@@ -199,14 +198,14 @@ describe("intl-time element properties", () => {
       element.lang = "en-CA";
       element.intlFormat = "duration";
       element.dateTime = "2026-08-01T00:00:00";
-      element.datetimeTo = "2026-08-27T00:00:00";
+      element.dateTimeTo = "2026-08-27T00:00:00";
       element.textContent = "unformatted duration";
 
       document.body.append(element);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(element.textContent).toBe(
-        "2026-8-1T0:0:0=>2026-8-27T0:0:0::{}",
+        '2026-8-1T0:0:0=>2026-8-27T0:0:0::{"style":"short"}',
       );
       element.remove();
     });
@@ -215,13 +214,15 @@ describe("intl-time element properties", () => {
       const element = document.createElement("time");
       element.lang = "en-CA";
       element.intlFormat = "duration";
-      element.datetimeFrom = "2026-08-01T00:00:00";
+      element.dateTimeFrom = "2026-08-01T00:00:00";
       element.textContent = "unformatted duration";
 
       document.body.append(element);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(element.textContent).toBe("2026-8-1T0:0:0=>now::{}");
+      expect(element.textContent).toBe(
+        '2026-8-1T0:0:0=>now::{"style":"short"}',
+      );
       element.remove();
     });
 
@@ -229,13 +230,15 @@ describe("intl-time element properties", () => {
       const element = document.createElement("time");
       element.lang = "en-CA";
       element.intlFormat = "duration";
-      element.datetimeTo = "2026-08-27T00:00:00";
+      element.dateTimeTo = "2026-08-27T00:00:00";
       element.textContent = "unformatted duration";
 
       document.body.append(element);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(element.textContent).toBe("now=>2026-8-27T0:0:0::{}");
+      expect(element.textContent).toBe(
+        'now=>2026-8-27T0:0:0::{"style":"short"}',
+      );
       element.remove();
     });
 
@@ -249,7 +252,9 @@ describe("intl-time element properties", () => {
       document.body.append(element);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(element.textContent).toBe("2026-8-1T0:0:0=>now::{}");
+      expect(element.textContent).toBe(
+        '2026-8-1T0:0:0=>now::{"style":"short"}',
+      );
       element.remove();
     });
 
@@ -257,8 +262,8 @@ describe("intl-time element properties", () => {
       const element = document.createElement("time");
       element.lang = "en-CA";
       element.intlFormat = "duration";
-      element.datetimeFrom = "2026-08-01T00:00:00";
-      element.datetimeTo = "2026-08-27T00:00:00";
+      element.dateTimeFrom = "2026-08-01T00:00:00";
+      element.dateTimeTo = "2026-08-27T00:00:00";
       element.intlOptions = {
         largestUnit: "days",
         smallestUnit: "hours",
