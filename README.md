@@ -215,18 +215,6 @@ ariaAttributeBehaviors.define('level', AriaTreegridExpander)
 
 ### Combine all of the above into a `customBehaviors` registry
 
-use the options object from each registered behavior devinition to determine how it will connect
-
-| Option | Description |
-| --- | --- |
-| `asQuery` | Connect this behavior to elements using a custom query. If value is true, use the behavior name as query selector. If value a string, use it is as the query selector. Ignore if false or omitted |
-| `asTag` | Connect this behavior to elements with a matching tagname. If value is true, use the behavior name as the tagname. If value is a string, use is it as the tagname. ignore if false or omitted |
-| `asClass` | Connect this behavior to elements with a matching classname. If value is true, use the behavior name as the classname. If value is a string, use is it as the classname. Ignore if false or omitted |
-| `asAttribute` | Connect this behavior to elements with a specific named attribute. If value is true, use the behavior name as the attribute. If value is a string, use is it as the attribute. ignore if false or omitted |
-| `asAttributeValue` | Connect this behavior to elements with a specific named attribute that contains a specific value as one of it's space delimited values. Use the option string value as the attribute name to check. Use the behavior name as the value to compare against. Ignore if omitted |
-
-If more than one option is set, an element will be connected if it matches any one setting.
-
 ```JS
 window.customBehavior =
   window.customBehavior ||
@@ -304,8 +292,22 @@ window.customBehavior =
       }
     },
   });
+```
+
+use the options object from each registered behavior definition to determine how it will connect
+
+| Option | Description |
+| --- | --- |
+| `asQuery` | Connect this behavior to elements using a custom query. If value is true, use the behavior name as query selector. If value a string, use it is as the query selector. Ignore if false or omitted |
+| `asTag` | Connect this behavior to elements with a matching tagname. If value is true, use the behavior name as the tagname. If value is a string, use is it as the tagname. ignore if false or omitted |
+| `asClass` | Connect this behavior to elements with a matching classname. If value is true, use the behavior name as the classname. If value is a string, use is it as the classname. Ignore if false or omitted |
+| `asAttribute` | Connect this behavior to elements with a specific named attribute. If value is true, use the behavior name as the attribute. If value is a string, use is it as the attribute. ignore if false or omitted |
+| `asAttributeValue` | Connect this behavior to elements with a specific named attribute that contains a specific value. Use the option string value as the attribute name to check. Append `~`,`^`,`$`, or `*` to the attribute name to do partial matching. Use the behavior name as the value to compare against. Ignore if omitted |
+
+If more than one option is set, an element will be connected if it matches any one setting.
 
 
+```js
 customBehavior.define('[role="tablist"] > [role="tab"]',TabHandler, {asQuery:true});
 // matches the second element in <[tagname]] role="tablist" ...>  <[tagname] role="tab" ...>
 
@@ -331,8 +333,8 @@ customBehavior.define('sticky-headers', StickyHeaders, {asAttributeValue:'has'})
 // matches <[tagname] has="sticky-headers ...">
 
 
-customBehavior.define('my-tooltip', StickyHeaders, {asTag: true, asClass: true, asAttribute:true});
-// matches either <my-tooltip ...>, <[tagname] class="sticky-headers ...">, or <[tagname] my-tooltip[="..."]>
+customBehavior.define('my-tooltip', FancyTooltip, {asTag: true, asClass: true, asAttribute:true});
+// matches either <my-tooltip ...>, <[tagname] class="my-tooltip ...">, or <[tagname] my-tooltip[="..."]>
   ```
 
 ## Define a Behavior
@@ -360,7 +362,7 @@ class ExampleBehavior {
 | --- | --- |
 | `static tagFilter` | Iterable of allowed tag names. When present, only matching elements that also have one of these tag names will be connected. |
 | `static tagExcludes` | Iterable of excluded tag names. When present, only matcing elements WITHOUT one of these tag names will be connected. Including both a tagFilter and tegExcludes list will never connect any element|
-| `static observedAttributes` | Iterable of attribute names that trigger `attributeChangedCallback`. Names ending in `-*` match any attribute with that prefix. |
+| `static observedAttributes` | Iterable of attribute names that trigger `attributeChangedCallback`. Names ending in `-*` match any attribute with that name prefix. |
 | `static preConnectionCheck(element, options)` | Runs before a behavior connects. Return `false` to skip the connection, `true` to continue, or an options object to merge into the definition. |
 | `constructor(element, options)` | Creates the behavior instance the first time an element connects. |
 | `connectedCallback(element)` | Runs when a behavior instance connects to an element, including reconnections. |
@@ -378,4 +380,4 @@ For live examples, see:
 
 
 
-See [the Intl Time example](examples/intl-time/) for a registry that formats native `<time>` elements.
+See the [Intl Time](examples/intl-time/) and [Intl Data](examples/intl-data/) examples for a behaviors that do locale aware formats with native `<time>`  and `<data>` elements.
