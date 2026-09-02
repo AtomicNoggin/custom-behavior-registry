@@ -359,9 +359,7 @@ class ExampleBehavior {
 | Member | Description |
 | --- | --- |
 | `static tagFilter` | Iterable of allowed tag names. When present, only matching elements that also have one of these tag names will be connected. |
-| `static tagExcludes` | Iterable of excluded tag names. When present, only matcing elements WITHOUT one of these tag names will be connected. 
-
-Including both a tagFilter and tegExcludes list will never connect any element|
+| `static tagExcludes` | Iterable of excluded tag names. When present, only matcing elements WITHOUT one of these tag names will be connected. Including both a tagFilter and tegExcludes list will never connect any element|
 | `static observedAttributes` | Iterable of attribute names that trigger `attributeChangedCallback`. Names ending in `-*` match any attribute with that prefix. |
 | `static preConnectionCheck(element, options)` | Runs before a behavior connects. Return `false` to skip the connection, `true` to continue, or an options object to merge into the definition. |
 | `constructor(element, options)` | Creates the behavior instance the first time an element connects. |

@@ -123,6 +123,15 @@ class IntlLang {
     element.dispatchEvent(event);
     this.lastValue = newValue;
   }
+  connectedMoveCallback(element) {
+    const event = new CustomEvent("intl-langchange", {
+      bubbles: true,
+      composed: true,
+      detail: { oldValue: element.lang, newValue: element.lang, fromDisconnect: element },
+    });
+    element.dispatchEvent(event);
+    this.lastValue = element.lang;
+  }
   connectedCallback(element) {
     const event = new CustomEvent("intl-langchange", {
       bubbles: true,
@@ -152,14 +161,14 @@ class IntlLang {
 customBehavior.define("intl-lang", IntlLang, { asAttribute: "lang" });
 
 export const closestLocale = (element) => {
-  let current = element;
+  let current = element.closest('[lang]');
   while (current) {
     if (current.lang) {
       try {
         return Intl.getCanonicalLocales(current.lang);
       } catch {}
     }
-    current = current.parentElement;
+    current = current.closest('[lang]');
   }
   return navigator.languages;
 };
