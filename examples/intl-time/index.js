@@ -602,30 +602,16 @@ class IntlTimeType {
         toDt = "";
       }
     } else {
-      console.log("Duration format has no datetime values.", {
-        dateTimeFrom: from,
-        dateTime: dt,
-        dateTimeTo: to,
-      });
       return null;
     }
-    console.log("Resolved duration datetime values.", { from: fromDt, to: toDt });
     const start = this.getDateValue(element, fromDt),
       end = this.getDateValue(element, toDt);
     if (!start || !end) {
-      console.log("Unable to parse duration datetime values.", {
-        from: fromDt,
-        to: toDt,
-        start,
-        end,
-      });
       return null;
     }
-    console.log("Parsed duration datetime values.", { start, end });
     return { start, end };
   }
   formatDuration(element, lang, options) {
-    console.log("Formatting duration.", { lang, options });
     const values = this.getDurationValues(element);
     if (!values) {
       element.textContent = this.initContent;
@@ -643,16 +629,9 @@ class IntlTimeType {
           largestUnit: options.largestUnit || "years",
           smallestUnit: options.smallestUnit || "seconds",
         });
-      const { requestedFormat, largestUnit, smallestUnit, ...durationOptions } =
-        options;
-      console.log("Calculated duration.", {
-        start: zdtStart,
-        end: zdtEnd,
-        duration,
-        durationOptions,
-      });
-      element.textContent = duration.toLocaleString(lang, durationOptions);
-      console.log("Formatted duration.", { textContent: element.textContent });
+        const { requestedFormat, largestUnit, smallestUnit, ...durationOptions } =
+          options;
+        element.textContent = duration.toLocaleString(lang, durationOptions);
     } catch (e) {
       console.error(
         "Error formatting duration:",
@@ -724,12 +703,6 @@ class IntlTimeType {
 
   constructor(element) {}
   attributeChangedCallback(element, attributeName, newValue, oldValue) {
-    console.log("IntlTimeType attributeChangedCallback:", {
-      element,
-      attributeName,
-      newValue,
-      oldValue,
-    });
     this.format(element);
   }
   connectedCallback(element) {

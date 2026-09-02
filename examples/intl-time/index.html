@@ -470,15 +470,12 @@
         document.querySelector("time").dateTimeTo = "";
       });
       datetimeInput.addEventListener("input", (event) => {
-        console.log("datetime input changed to:", event.target.value);
         document.querySelector("time").dateTime = event.target.value;
       });
       datetimeFromInput.addEventListener("input", (event) => {
-        console.log("datetime from input changed to:", event.target.value);
         document.querySelector("time").dateTimeFrom = event.target.value;
       });
       datetimeToInput.addEventListener("input", (event) => {
-        console.log("datetime to input changed to:", event.target.value);
         document.querySelector("time").dateTimeTo = event.target.value;
       });
       formatSelect.addEventListener("change", (event) => {
