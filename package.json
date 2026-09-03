@@ -1,6 +1,6 @@
 {
   "name": "custom-behavior-registry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Attach one or more custom element-like behavior classes to any element in the DOM",
   "keywords": [
     "JavaScript",
