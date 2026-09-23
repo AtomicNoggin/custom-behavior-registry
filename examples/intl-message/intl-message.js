@@ -14,11 +14,26 @@ const IntlMessageProperty = {
   },
 };
 
-Object.defineProperty(HTMLElement.prototype, "intlMessage", IntlMessageProperty);
+Object.defineProperty(
+  HTMLElement.prototype,
+  "intlMessage",
+  IntlMessageProperty,
+);
 
 export default class IntlMessageBehavior {
   static observedAttributes = ["intl-message", "intl-options"];
-  static tagExcludes = ["br", "hr", "img", "input", "link", "meta", "time", "data", "script", "style"];
+  static tagExcludes = [
+    "br",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "time",
+    "data",
+    "script",
+    "style",
+  ];
 
   constructor(element) {
     // Initialize existing properties to trigger their setters if they exist
@@ -36,23 +51,26 @@ export default class IntlMessageBehavior {
 
   format(element, forceUpdate) {
     if (forceUpdate) this.sig = null;
-    const messageLabel = element.intlMessage;
-    const messageOptions = element.intlOptions;
+    const realFallback = this.fallback || element.intlMessage;
+    const realMessageLabel = element.intlMessage || this.fallback;
+    if (!realMessageLabel) return;
     const locale = closestLocale(element);
-    const sig = `${locale}:${messageLabel}:${JSLN.stringify(messageOptions)}`;
+    const messageOptions = element.intlOptions;
+    const sig = `${locale}:${realMessageLabel}:${JSLN.stringify(messageOptions)}`;
     if (sig !== this.sig) {
       this.sig = sig;
-      let formatter = Intl.$formattedMessages.get(locale, messageLabel);
-      if (!formatter) {
-        formatter = new Intl.$messageFormat(this.fallback, "default", { label: messageLabel });
-      }
+      const formatter = Intl.$formattedMessages.getOrInsert(
+        locale,
+        realMessageLabel,
+        realFallback,
+      );
       element.textContent = formatter.format(messageOptions);
     }
   }
 
   connectedCallback(element) {
     this.fallback = element.textContent;
-    this.elementCallback = (forceUpdate) => this.format(element,forceUpdate);
+    this.elementCallback = (forceUpdate) => this.format(element, forceUpdate);
     addToLangChangeListener(element, this.elementCallback);
     this.format(element);
   }

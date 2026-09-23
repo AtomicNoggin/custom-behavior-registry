@@ -33,9 +33,9 @@
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "optionalDependencies": {
+    "url-pattern-builder": "^1.1.0",
     "intl-messageformat": "^11.2.15",
-    "jsln": "github:AtomicNoggin/jsln",
-    "url-builder": "github:AtomicNoggin/url-builder"
+    "jsln": "github:AtomicNoggin/jsln"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

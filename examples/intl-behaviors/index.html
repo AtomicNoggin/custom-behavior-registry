@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intl Behaviors Example</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "intl-messageformat": "https://cdn.jsdelivr.net/npm/intl-messageformat@11.2.15/+esm",
+          "jsln": "https://cdn.jsdelivr.net/gh/atomicnoggin/jsln/dist/index.js",
+          "url-pattern-builder": "https://cdn.jsdelivr.net/gh/atomicnoggin/url-pattern-builder/index.js"
+        }
+      }
+    </script>
+    <script type="module" src="./index.js"></script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 52rem;
+        margin: 2rem auto;
+        padding: 0 1rem 3rem;
+      }
+      section {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #ccd3dc;
+        border-radius: 0.5rem;
+      }
+      code {
+        background: #f1f3f5;
+        padding: 0.1rem 0.25rem;
+      }
+      label {
+        display: inline-block;
+        margin-right: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Intl Behaviors</h1>
+      <label>
+        Language
+        <select id="locale">
+          <option value="en">English</option>
+          <option value="fr">French</option>
+        </select>
+      </label>
+    </header>
+
+    <script type="intl-messageformat">
+      {
+        "en": {
+          "shared": {
+            "greeting": "Hello, {name}!",
+            "count": "You have {count} messages"
+          }
+        },
+        "fr": {
+          "shared": {
+            "greeting": "Bonjour, {name} !",
+            "count": "Vous avez {count} messages"
+          }
+        }
+      }
+    </script>
+
+    <section>
+      <h2>intl-message</h2>
+      <p intl-message="shared.greeting" intl-options="name:'Ada'">Hello, {name}!</p>
+      <p intl-message="shared.count" intl-options="count:3">You have {count} messages</p>
+    </section>
+
+    <section>
+      <h2>intl-data</h2>
+      <label>Total:</label>
+      <data intl-format="currency" intl-currency="USD" intl-options="currencyDisplay:'symbol'">1234.56</data>
+    </section>
+
+    <section>
+      <h2>intl-time</h2>
+      <time intl-format="datetime long" datetime="2025-01-11T14:00:00-05:00"></time>
+    </section>
+
+    <script type="module">
+      const locale = document.querySelector("#locale");
+      locale.addEventListener("change", () => {
+        document.documentElement.lang = locale.value;
+      });
+    </script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Custom Commands Behavior
 
-An extention to the [Invoker COmmands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) 
+An extention to the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) 
 for connecting controls to custom commands or methods on another element. It uses 
 `CustomBehaviorRegistry` and supports buttons, inputs, selects, textareas, and focusable 
 elements with `tabindex`.

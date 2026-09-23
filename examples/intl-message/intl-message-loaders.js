@@ -1,5 +1,5 @@
 import JSLN from "jsln";
-import URLBuilder from "url-builder";
+import URLBuilder from "url-pattern-builder";
 import {
   registerLoaderAction,
   unregisterLoaderAction,

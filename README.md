@@ -316,7 +316,7 @@ window.customBehaviors =
     },
   });
 ```
-check out [presets/custom-behaviors](./presets/custom-behaviors/) for a more robust version with usage details.
+check out [presets/custom-behaviors](./presets/custom-behaviors/) for a more robust version with usage details. This preset is used in the [example behaviors](./examples/).
 
 ## Define a Behavior
 
@@ -361,4 +361,6 @@ For live examples, see:
 - [Expandable Table Rows with Details Elements.](https://codepen.io/AtomicNoggin/pen/KwVppbp), and
 - [Combining Table Behaviors](https://codepen.io/AtomicNoggin/pen/dPXzeZe)
 
-See the [Intl Time](examples/intl-time/) and [Intl Data](examples/intl-data/) examples for a behaviors that do locale aware formats with native `<time>`  and `<data>` elements.
+See the [Intl Behaviors](examples/intl-behaviors/) bundle, or the individual [Intl Message](examples/intl-message/), [Intl Time](examples/intl-time/), and [Intl Data](examples/intl-data/) examples for behaviors that do locale-aware formatting with native `<time>`, `<data>`, and message-driven content elements.
+
+See the [Custom Commands](examples/custom-commands/) example for behavior that extends the exsting [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) to work with more than just `<button>`, `<dialog>`, and `popover` enabled elements. 

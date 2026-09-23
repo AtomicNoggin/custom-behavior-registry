@@ -164,10 +164,7 @@ export default class IntlAttributeMessagesBehavior {
       const sig = `${locale}:${realMessageLabel}:${JSLN.stringify(attrOptions)}`;
       if (sig !== this.sig[attr]) {
         this.sig[attr] = sig;
-        let formatter = Intl.$formattedMessages.get(locale, realMessageLabel);
-        if (!formatter) {
-          formatter = new Intl.$messageFormat(realFallback, "default", { label: realMessageLabel });
-        }
+        let formatter = Intl.$formattedMessages.getOrInsert(locale, realMessageLabel, realFallback);
         element.setAttribute(attr, formatter.format(attrOptions));
       }
     }

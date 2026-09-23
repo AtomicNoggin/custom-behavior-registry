@@ -28,8 +28,10 @@ class IntlFormattedMessageCache {
 
   get(locale, key) {
     locale = Intl.getCanonicalLocales(locale)[0]; // IntlMessageFormat.resolveLocale(locale);
+    // start with the default locale message if available
+    let msg = this.cache["default"]?.[key] || null;
+    // then try the given locale and its less specific variants
     const localeParts = locale.split("-");
-    let msg = this.cache["default"]?.[key];
     while (localeParts.length > 0) {
       const localeKey = localeParts.join("-");
       if (this.cache[localeKey]?.[key]) {
@@ -38,9 +40,23 @@ class IntlFormattedMessageCache {
       }
       localeParts.pop();
     }
-    if (localeParts.join("-") !== locale && msg) {
+    if (msg && localeParts.join("-") !== locale) {
+      // hoist the found message into the locale-specific cache 
+      // to spead up future lookups
       this.cache[locale] = this.cache[locale] || {};
       this.cache[locale][key] = msg;
+    }
+    return msg;
+  }
+  
+  getOrInsert(locale, key, fallback) {
+    locale = Intl.getCanonicalLocales(locale)[0]; // IntlMessageFormat.resolveLocale(locale);
+    let msg = this.get(locale, key);
+    const realFallback = fallback || key;
+    if (!msg) {
+      // this will auto set the default locale cache for this message
+      msg = new IntlMessageFormatWrapper(realFallback, "default", { label: key });
+      this.set(locale, key, msg);
     }
     return msg;
   }
@@ -55,6 +71,7 @@ class IntlFormattedMessageCache {
       this.cache[locale] = this.cache[locale] || {};
       this.cache[locale][key] = value;
     }
+    
   }
 
   delete(key, locale) {
@@ -89,6 +106,7 @@ class IntlFormattedMessageCache {
       const flattened = flattenJSON(json[locale]);
       for (const key in flattened) {
         if (typeof flattened[key] === "string") {
+          // this will auto set the locale cache for this message
           new IntlMessageFormatWrapper(flattened[key], locale, { label: key });
         }
       }
