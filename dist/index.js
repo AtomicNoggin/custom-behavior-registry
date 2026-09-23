@@ -659,7 +659,7 @@ var CustomBehaviorRegistry = class _CustomBehaviorRegistry {
       observe: () => {
         this[/* @__PURE__ */ Symbol.for("actions")].observable = true;
         if (this.#observer) {
-          this.#mutationAction(this.observer.takeRecords());
+          this.#mutationAction(this.#observer.takeRecords());
         } else {
           const observer = new MutationObserver(this.#mutationAction);
           observer.add = (root) => {
