@@ -14,7 +14,6 @@ describe("intl-data", () => {
 
   beforeAll(async () => {
     document.body.innerHTML = "";
-    globalThis.CustomBehaviorRegistry = CustomBehaviorRegistry;
     originalNumberFormat = Intl.NumberFormat;
     Intl.NumberFormat = class NumberFormat {
       constructor(locale, options) {
@@ -27,15 +26,12 @@ describe("intl-data", () => {
       }
     };
     await import("./index.js");
-    registry = window.customBehavior;
   });
 
   afterAll(() => {
     CustomBehaviorRegistry.undefineAllBehaviors(registry);
     CustomBehaviorRegistry.disconnect(registry);
     Intl.NumberFormat = originalNumberFormat;
-    delete window.customBehavior;
-    delete globalThis.CustomBehaviorRegistry;
     document.body.innerHTML = "";
   });
 

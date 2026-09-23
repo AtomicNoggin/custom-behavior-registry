@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import CustomBehaviorRegistry from "../../index.js";
+import "./index.js";
 
 Map.prototype.getOrInsert ??= function getOrInsert(key, value) {
   if (!this.has(key)) {
@@ -14,8 +14,6 @@ describe("intl-time element properties", () => {
 
   beforeAll(async () => {
     document.body.innerHTML = "";
-    globalThis.CustomBehaviorRegistry = CustomBehaviorRegistry;
-    delete window.customBehavior;
     originalTemporal = globalThis.Temporal;
     globalThis.Temporal = {
       Now: {
@@ -64,15 +62,10 @@ describe("intl-time element properties", () => {
         }),
       },
     };
-    await import("./index.js");
-    registry = window.customBehavior;
+    registry = window.customBehaviors;
   });
 
   afterAll(() => {
-    CustomBehaviorRegistry.undefineAllBehaviors(registry);
-    CustomBehaviorRegistry.disconnect(registry);
-    delete window.customBehavior;
-    delete globalThis.CustomBehaviorRegistry;
     if (originalTemporal === undefined) {
       delete globalThis.Temporal;
     } else {

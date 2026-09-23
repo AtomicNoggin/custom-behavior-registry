@@ -1,4 +1,4 @@
-import { closestLocale } from "../intl-common.js";
+import { customBehaviors, addToLangChangeListener, removeFromLangChangeListener, closestLocale } from "../intl-common.js";
 
 const ALLOWED_FORMATS = ["date", "time", "datetime", "duration"];
 const ALLOWED_STYLES = ["full", "long", "medium", "short"]; 
@@ -123,7 +123,7 @@ Object.defineProperty(
   dateTimeToProperty,
 );
 
-class IntlTimeType {
+export default class IntlTime {
   static tagFilter = ["time"];
   static observedAttributes = [
     "intl-format",
@@ -644,13 +644,16 @@ class IntlTimeType {
       element.textContent = this.initContent;
     }
   }
-  format(element) {
+  format(element,forceUpdate) {
     this.initValue = this.initContent || element.textContent;
     if (
       element.intlFormat ||
       element.intlSkeleton ||
       Object.keys(element.intlOptions).length
     ) {
+      if (forceUpdate) {
+        this.sig = null;
+      }
       const options = this.getCombinedOptions(element),
         lang = closestLocale(element),
         sig =
@@ -705,34 +708,17 @@ class IntlTimeType {
   attributeChangedCallback(element, attributeName, newValue, oldValue) {
     this.format(element);
   }
+  eventFormatMethod;
   connectedCallback(element) {
-    if (!document[Symbol.for("intl-format-langchange")]) {
-      document[Symbol.for("intl-format-langchange-set")] =
-        document[Symbol.for("intl-format-langchange-set")] || new Set();
-      const handler = (document[Symbol.for("intl-format-langchange")] = (e) => {
-        for (const element of document[
-          Symbol.for("intl-format-langchange-set")
-        ]) {
-          element.format?.();
-        }
-      });
-      document.addEventListener("intl-langchange", handler);
-    }
-    document[Symbol.for("intl-format-langchange-set")].add(element);
-    element.format = () => this.format(element);
+    this.eventFormatMethod = (forceUpdate) => this.format(element, forceUpdate);
+    addToLangChangeListener(element, this.eventFormatMethod);
     this.format(element);
   }
   disconnectedCallback(element) {
-    document[Symbol.for("intl-format-langchange-set")].delete(element);
-    if (!document[Symbol.for("intl-format-langchange-set")].size) {
-      document.removeEventListener(
-        "intl-langchange",
-        document[Symbol.for("intl-format-langchange")],
-      );
-      delete document[Symbol.for("intl-format-langchange")];
-      delete document[Symbol.for("intl-format-langchange-set")];
-    }
+    removeFromLangChangeListener(element, this.eventFormatMethod);
     element.textContent = this.initContent;
   }
 }
-customBehavior.define("intil-time-format", IntlTimeType, { asTag: "time" });
+customBehaviors.whenDefined("intl-lang").then(() => {
+  customBehaviors.define("intl-time", IntlTime, { asAttribute: "intl-format" });
+});

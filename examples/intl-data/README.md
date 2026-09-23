@@ -20,7 +20,7 @@ npm install jsln
 
 Load a module-compatible `CustomBehaviorRegistry` and JSLN implementation
 before loading [`index.js`](index.js). The example creates or reuses
-`window.customBehavior` through [`../intl-common.js`](../intl-common.js).
+`window.customBehaviors` through [`../intl-common.js`](../intl-common.js).
 
 ```html
 <script type="module" src="./examples/intl-data/index.js"></script>

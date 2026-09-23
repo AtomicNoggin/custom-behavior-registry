@@ -1,4 +1,5 @@
-import { closestLocale } from "../intl-common.js";
+import { customBehaviors, closestLocale, addToLangChangeListener, removeFromLangChangeListener } from "../intl-common.js";
+import JSLN from "jsln";
 
 const ALLOWED_FORMATS = ["number", "decimal", "currency", "percent", "unit"];
 
@@ -55,18 +56,21 @@ Object.defineProperties(HTMLDataElement.prototype, {
   },
 });
 
-class IntlData {
+export default class IntlData {
   static observedAttributes = ["intl-format", "intl-currency", "intl-unit", "intl-options", "value"];
+  static tafFilter = ['data'];
 
   constructor(element) {
-    this.initialContent = element.textContent;
   }
 
-  format(element) {
+  format(element, forceUpdate) {
     const value = Number(element.value);
     const format = element.intlFormat;
     const options = { ...(element.intlOptions || {}) };
-
+    const locale = closestLocale(element);
+    if (forceUpdate) {
+      this.sig = null;
+    }
     if (["decimal", "currency", "percent", "unit"].includes(format)) {
       options.style = format;
     }
@@ -78,13 +82,19 @@ class IntlData {
     if (format === "unit" && element.hasAttribute("intl-unit")) {
       options.unit = element.getAttribute("intl-unit");
     }
-
-    element.textContent = Number.isNaN(value)
-      ? this.initialContent
-      : new Intl.NumberFormat(closestLocale(element), options).format(value);
+    const sig = `${locale}:${format}:${JSLN.stringify(options)}`;
+    if (sig !== this.sig) {
+      this.sig = sig;
+      element.textContent = Number.isNaN(value)
+        ? this.initialContent
+        : new Intl.NumberFormat(locale, options).format(value);
+    }
   }
-
+  elementFormatMethod;
   connectedCallback(element) {
+    this.initialContent = element.textContent;
+    this.elementFormatMethod = (forceUpdate) => this.format(element, forceUpdate);
+    addToLangChangeListener(element, this.elementFormatMethod);
     this.format(element);
   }
 
@@ -93,9 +103,11 @@ class IntlData {
   }
 
   disconnectedCallback(element) {
+    removeFromLangChangeListener(element, this.elementFormatMethod);
     element.textContent = this.initialContent;
   }
 }
-
-const registry = window.customBehavior;
-registry.define("intl-data-format", IntlData, { asTag: "data" });
+customBehaviors.whenDefined("intl-lang").then(() => {
+  customBehaviors.define("intl-data", IntlData, { asAttribute: "intl-format" });
+}
+);

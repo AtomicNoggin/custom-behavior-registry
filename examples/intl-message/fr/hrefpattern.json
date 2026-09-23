@@ -1,0 +1,7 @@
+{
+  "fr": {
+    "hrefpattern": {
+      "greeting": "Ceci est chargé à partir du fichier JSON lié via hrefpattern"
+    }
+  }
+}

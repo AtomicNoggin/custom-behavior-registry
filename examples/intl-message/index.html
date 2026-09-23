@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intl Message Test Harness</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "intl-messageformat": "https://cdn.jsdelivr.net/npm/intl-messageformat@11.2.15/+esm",
+          "jsln": "https://cdn.jsdelivr.net/gh/atomicnoggin/jsln/dist/index.js",
+          "url-builder": "https://cdn.jsdelivr.net/gh/atomicnoggin/url-builder/index.js"
+        }
+      }
+    </script>
+    <script type="module" src="./index.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+      }
+
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      form,
+      section {
+        margin-block: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #ccd3dc;
+        border-radius: 0.5rem;
+      }
+
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      p {
+        margin-block: 1rem;
+        padding: 0.75rem 1rem;
+        background: #eef6ff;
+        border-left: 0.25rem solid #2673c5;
+      }
+
+      code {
+        background: #f1f3f5;
+        padding: 0.1rem 0.25rem;
+      }
+
+      .locale-label {
+        background: rgba(205, 222, 239, 0.6);
+        padding: 0.25rem 0.5rem;
+        position: sticky;
+        top: 0;
+        float: right;
+      }
+    </style>
+  </head>
+  <body>
+      <label class="locale-label">
+        Locale
+        <select id="locale">
+          <option value="en">English</option>
+          <option value="fr">French</option>
+        </select>
+      </label>
+    <header>
+      <div>
+        <h1>Intl Message</h1>
+      </div>
+    </header>
+    <script type="intl-messageformat">
+      {
+        "en": {
+          "inline": {
+            "greeting": "Welcome to this test harness!"
+          }
+        },
+        "fr": {
+          "inline": {
+            "greeting": "Bienvenue dans cet environnement de test"
+          }
+        }
+      }
+    </script>
+
+    <section>
+      <h2>Loaded from inline &lt;script type="intl-messageformat"&gt;</h2>
+      <p intl-message="inline.greeting">Welcome to this test harness!</p>
+    </section>
+    <link rel="intl-messageformat" href="./en/hreflang.json" hreflang="en" />
+    <link rel="intl-messageformat" href="./fr/hreflang.json" hreflang="fr" />
+    <section>
+      <h2>Loaded from &lt;link rel="intl-messageformat" hreflang="..."&gt;</h2>
+      <p intl-message="hreflang.greeting">
+        Hello, this is fallback text for href lang testing!
+      </p>
+    </section>
+    <link rel="intl-messageformat" hrefpattern="./:lang/hrefpattern.json" />
+    <section>
+      <h2>
+        Loaded from &lt;link rel="intl-messageformat" hrefpattern="..."&gt;
+      </h2>
+      <p intl-message="hrefpattern.greeting">
+        Hello, this is fallback text for hrefpattern testing!
+      </p>
+    </section>
+    <!-- only load for French. English will revert to fallback values -->
+    <script type="intl-messageformat" lang="fr">
+        {"attributes": {
+          "placeholder": "Entrez votre texte ici"
+        },
+        "options": {
+          "greeting": "Bonjour, {name}!",
+          "inbox": "{count, plural, =0 {Vous n'avez aucun message} one {Vous avez un message} other {Vous avez # messages}}",
+          "status": "{state, select, active {Votre compte est actif} pending {Votre compte est en attente} other {Votre compte n'est pas accessible}}",
+          "placeholder":  "{count, plural, =0 {Votre compte est verrouillé} one {Dernière chance} other {Il te reste # essais}}"
+        }
+      }
+    </script>
+    <section>
+      <h2>With intl-attribute-messages</h2>
+      <p>
+        <label>Localized Placeholder</label><br /><input
+          style="width: 100%"
+          readonly
+          intl-attribute-messages="placeholder:'attributes.placeholder'"
+          placeholder="Enter your text here"
+        />
+      </p>
+    </section>
+    <section>
+      <h2>With intl-options</h2>
+      <p
+        id="options-greeting"
+        intl-message="options.greeting"
+        intl-options="name:'Ada'"
+      >
+        Hello, {name}!
+      </p>
+      <p id="options-inbox" intl-message="options.inbox" intl-options="count:3">
+        {count, plural, =0 {You have no messages} one {You have one message}
+        other {You have # messages}}
+      </p>
+      <p
+        id="options-status"
+        intl-message="options.status"
+        intl-options="state:'active'"
+      >
+        {state, select, active {Your account is active} pending {Your account is
+        pending} other {Your account is unavailable}}
+      </p>
+      <p>
+        <label>Fake Password</label><br />
+        <input
+          id="options-input"
+          type="password"
+          readonly
+          intl-attribute-messages="placeholder:'options.placeholder'"
+          intl-attribute-options-placeholder="count:3"
+          placeholder="{count, plural, =0 {Your account is locked} one {Last chance}
+        other {You have # tries left}}"
+        />
+      </p>
+      <h3>Live values</h3>
+      <label>
+        Name
+        <input id="name" value="Ada" />
+      </label>
+      <label>
+        Messages
+        <input id="count" type="number" min="0" value="3" />
+      </label>
+      <label>
+        State
+        <select id="state">
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="other">Unavailable</option>
+        </select>
+      </label>
+      <label>
+        Tries
+        <select id="tries">
+          <option value="3">Three</option>
+          <option value="2">Two</option>
+          <option value="1">One</option>
+          <option value="0">Zero</option>
+        </select>
+      </label>
+    </section>
+
+    <script type="module">
+      const locale = document.querySelector("#locale");
+      const name = document.querySelector("#name");
+      const count = document.querySelector("#count");
+      const state = document.querySelector("#state");
+      const input = document.querySelector("#options-input");
+      const greeting = document.querySelector("#options-greeting");
+      const inbox = document.querySelector("#options-inbox");
+      const status = document.querySelector("#options-status");
+      const tries = document.querySelector("#tries");
+      const updateLocale = () => {
+        document.documentElement.lang = locale.value;
+      };
+      const updateGreeting = () => {
+        greeting.intlOptions = { name: name.value };
+      };
+      const updateInbox = () => {
+        inbox.intlOptions = { count: Number(count.value) || 0 };
+      };
+      const updateStatus = () => {
+        status.intlOptions = { state: state.value };
+      };
+      locale.addEventListener("change", updateLocale);
+      name.addEventListener("input", updateGreeting);
+      count.addEventListener("input", updateInbox);
+      state.addEventListener("change", updateStatus);
+      tries.addEventListener("change", () => {
+        // you can update object values directly without replacing the whole object
+        input.intlAttributeOptions.placeholder.count = Number(tries.value) || 0;
+      });
+    </script>
+  </body>
+</html>

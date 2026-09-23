@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Custom Commands Test Harness</title>
+  <style>
+    body {
+      font: 16px system-ui, sans-serif;
+      max-width:  fiftyrem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    section {
+      margin-block: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+
+    button, input, select {
+      margin: 0.25rem;
+      padding: 0.4rem 0.6rem;
+    }
+
+    #tabindex-element {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      color:#fff;
+      background-color:dodgerblue;
+    }
+
+    #output-section {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      height: 33vh;
+      margin-block-end: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+    }
+
+    #output-section h2 {
+      margin-block-start: 0;
+      flex: none;
+    }
+
+    #output {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin: 0;
+      padding: 1rem;
+      background: #111;
+      color: #9f9;
+      white-space: pre-wrap;
+      font-family: monospace;
+      overflow-y: auto;
+    }
+
+    .source-details {
+      margin-top: 1rem;
+    }
+
+    .source-details pre {
+      max-height: 16rem;
+      overflow: auto;
+      padding: 1rem;
+      background: #f4f4f4;
+    }
+  </style>
+  <script type="module" src="./index.js"></script>
+</head>
+<body>
+  <h1>Custom Commands Test Harness</h1>
+
+  <section>
+    <h2>Custom commands</h2>
+
+    <button command="--log-click" commandfor="output">
+      Log click
+    </button>
+
+    <button command="--increment" commandfor="output">
+      Increment
+    </button>
+
+    <button command="--log-source" commandfor="output">
+      Log source
+    </button>
+
+    <button command="--clear-log" commandfor="output">
+      Clear log
+    </button>
+    <div id="tabindex-element" tabindex="0" command="--log-source" commandfor="output">Div with a tabindex</div>
+    <p>Count: <output id="count">0</output></p>
+
+    <details class="source-details">
+      <summary>HTML</summary>
+      <pre><code>&lt;button command="--log-click" commandfor="output"&gt;Log click&lt;/button&gt;
+&lt;button command="--increment" commandfor="output"&gt;Increment&lt;/button&gt;
+&lt;button command="--log-source" commandfor="output"&gt;Log source&lt;/button&gt;
+&lt;button command="--clear-log" commandfor="output"&gt;Clear log&lt;/button&gt;
+&lt;div tabindex="0" command="--log-source" commandfor="output"&gt;
+  Div with a tabindex
+&lt;/div&gt;
+&lt;output id="count"&gt;0&lt;/output&gt;</code></pre>
+    </details>
+    <details class="source-details">
+      <summary>JavaScript</summary>
+      <pre><code>
+// the Event output at the bottom of the page
+const output = document.getElementById("output");
+
+function log(message) {
+    output.textContent += `${message}\n`;
+    output.scrollTop = output.scrollHeight;
+}
+
+output.customCommand.define("--log-click", () =&gt; {
+  log("Received --log-click");
+});
+let value = 0;
+output.customCommand.define("--increment", () =&gt; {
+  value += 1;
+  count.textContent = value;
+  log(`Count incremented to ${value}`);
+});
+
+output.customCommand.define("--log-source", (source) =&gt; {
+  log(`Source: &lt;${source.tagName.toLowerCase()}&gt;`);
+}, { arguments: ["source"] });</code></pre>
+    </details>
+  </section>
+
+  <section>
+    <h2>Custom element methods</h2>
+    <details id="custom-element-methods">
+      <summary>Summary Details</summary>
+      This details Pane has three methods added to it.<br>
+      <br>
+      <code>show()</code>, <code>hide()</code>, and <code>toggle()</code>.
+    </details><br>
+    <br>
+    <button id="details-show" command="show" commandfor="custom-element-methods">
+      Show Details
+    </button>
+
+    <button id="details-hide" command="hide" commandfor="custom-element-methods">
+      Hide Details
+    </button>
+
+    <button id="details-toggle" command="toggle" commandfor="custom-element-methods">
+      Toggle Details
+    </button>
+
+    <p>Count: <output id="count">0</output></p>
+
+    <details class="source-details">
+      <summary>HTML</summary>
+      <pre><code>&lt;details id="custom-element-methods"&gt;
+  &lt;summary&gt;Summary Details&lt;/summary&gt;
+&lt;/details&gt;
+&lt;button command="show" commandfor="custom-element-methods"&gt;Show&lt;/button&gt;
+&lt;button command="hide" commandfor="custom-element-methods"&gt;Hide&lt;/button&gt;
+&lt;button command="toggle" commandfor="custom-element-methods"&gt;Toggle&lt;/button&gt;</code></pre>
+    </details>
+    <details class="source-details">
+      <summary>JavaScript</summary>
+      <pre><code>
+const customElementMethods = document.getElementById("custom-element-methods");
+
+customElementMethods.show = () =&gt; {
+  customElementMethods.open = true;
+};
+customElementMethods.hide = () =&gt; {
+  customElementMethods.open = false;
+};
+customElementMethods.toggle = () =&gt; {
+  customElementMethods.open = !customElementMethods.open;
+};</code></pre>
+    </details>
+  </section>
+
+  <section>
+    <h2>Non-click triggers</h2>
+
+    <label>
+      Choose an option:
+      <select command="--selection-changed" commandfor="output">
+        <option value="">Select one</option>
+        <option value="one">One</option>
+        <option value="two">Two</option>
+        <option value="three">Three</option>
+      </select>
+    </label>
+
+    <label>
+      Enter text:
+      <input
+        type="text"
+        id="text-input"
+        command="--text-display"
+        commandfor="text-output"
+        commandtrigger="change"
+        placeholder="Type to display below"
+      >    </label><br>
+      Display Text:
+      <output id="text-output">
+
+      </output><br>
+      <br>
+      <label>
+        <input type="radio" name="radio-trigger" value="change" command="--set-trigger" commandfor="text-input" checked> trigger on change
+          </label>
+      <label>
+        <input type="radio" name="radio-trigger" value="input" command="--set-trigger" commandfor="text-input"> trigger on input
+      </label>
+
+    <details class="source-details">
+      <summary>HTML</summary>
+      <pre><code>&lt;select command="--selection-changed" commandfor="output"&gt;...&lt;/select&gt;
+&lt;input id="text-input" command="--text-display"
+  commandfor="text-output" commandtrigger="change"&gt;
+&lt;output id="text-output"&gt;&lt;/output&gt;
+&lt;input type="radio" value="change" command="--set-trigger"
+  commandfor="text-input" checked&gt;
+&lt;input type="radio" value="input" command="--set-trigger"
+  commandfor="text-input"&gt;</code></pre>
+    </details>
+    <details class="source-details">
+      <summary>JavaScript</summary>
+      <pre><code>
+// same output element as above
+output.customCommand.define("--selection-changed", (event) =&gt; {
+  log(`Selection changed: ${event.source.value}`);
+}, { arguments: ["event"] });
+
+const textInput = document.getElementById("text-input");
+textInput.customCommand.define("--set-trigger", (value) =&gt; {
+  textInput.commandTrigger = value;
+}, { arguments: ["source.value"] });
+
+const textOutput = document.getElementById("text-output");
+textOutput.customCommand.define("--text-display", (value) =&gt; {
+  textOutput.textContent = value;
+}, { arguments: ["source.value"] });</code></pre>
+    </details>
+  </section>
+
+  <section>
+    <h2>Built-in commands</h2>
+
+    <button command="show-modal" commandfor="demo-dialog">
+      Show dialog
+    </button>
+
+    <button command="show-popover" commandfor="demo-popover">
+      Show popover
+    </button>
+
+    <dialog id="demo-dialog">
+      <p>This dialog uses the built-in <code>show-modal</code> command.</p>
+      <button command="close" commandfor="demo-dialog">Close</button>
+    </dialog>
+
+    <div id="demo-popover" popover>
+      <p>This popover uses the built-in <code>show-popover</code> command.</p>
+      <button command="hide-popover" commandfor="demo-popover">
+        Close popover
+      </button>
+    </div>
+
+    <details class="source-details">
+      <summary>HTML</summary>
+      <pre><code>&lt;button command="show-modal" commandfor="demo-dialog"&gt;
+  Show dialog
+&lt;/button&gt;
+&lt;dialog id="demo-dialog"&gt;...&lt;/dialog&gt;
+
+&lt;button command="show-popover" commandfor="demo-popover"&gt;
+  Show popover
+&lt;/button&gt;
+&lt;div id="demo-popover" popover&gt;...&lt;/div&gt;</code></pre>
+    </details>
+    <details class="source-details">
+      <summary>JavaScript</summary>
+      <pre><code>// No JavaScript is needed for built-in commands.
+// The behavior maps show-modal to target.showModal(),
+// show-popover to target.showPopover(), and close to target.close().</code></pre>
+    </details>
+  </section>
+
+  <section id="output-section">
+    <h2>Event output</h2>
+    <pre id="output"></pre>
+  </section>
+
+
+  <script type="module">
+
+    // Custom Command Code
+
+    const count = document.querySelector("#count");
+    const output = document.querySelector("#output");
+    let value = 0;
+
+    function log(message) {
+      output.textContent += `${message}\n`;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    output.customCommand.define("--log-click", () => {
+      log("Received --log-click");
+    });
+
+    output.customCommand.define("--increment", () => {
+      value += 1;
+      count.textContent = value;
+      log(`Count incremented to ${value}`);
+    });
+
+    output.customCommand.define("--log-source", (source) => {
+      log(`Source: <${source.tagName.toLowerCase()}>`);
+    }, {
+      arguments: ["source"],
+    });
+
+    output.customCommand.define("--clear-log", () => {
+      output.textContent = "";
+    });
+
+
+    // Custom Element Methods Code
+
+    const customElementMethods = document.querySelector("#custom-element-methods");
+    customElementMethods.show = () => {
+      log("Custom element show called");
+      customElementMethods.open = true;
+    };
+    customElementMethods.hide = () => {
+      log("Custom element hide called");
+      customElementMethods.open = false;
+    };
+    customElementMethods.toggle = () => {
+      log("Custom element toggle called");
+      customElementMethods.open = !customElementMethods.open;
+    };
+
+    // Non-Click Triggers Code
+
+    output.customCommand.define("--selection-changed", (event) => {
+      log(`Selection changed: ${event.source.value}`);
+    }, {
+      arguments: ["event"],
+    });
+
+    const textInput = document.querySelector("#text-input");
+    const textOutput = document.querySelector("#text-output");
+    textInput.customCommand.define("--set-trigger", (value) => {
+      log(`Trigger set: ${value}`);
+      textInput.commandTrigger = value;
+    }, {
+      arguments: ["source.value"],
+    });
+
+    textOutput.customCommand.define("--text-display", (value) => {
+      log(`Text changed: ${value}`);
+      textOutput.textContent = value;
+    }, {
+      arguments: ["source.value"],
+    });
+
+    // No Code Needed for Built in Commands
+
+    log("Harness ready");
+  </script>
+</body>
+</html>

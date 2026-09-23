@@ -1,0 +1,198 @@
+import JSLN from "jsln";
+import {
+  addToLangChangeListener,
+  removeFromLangChangeListener,
+  closestLocale,
+} from "../intl-common.js";
+
+
+ const IntlAttributeMessagesProperty = {
+  get() {
+    const messages = JSLN.parse(`{${this.getAttribute("intl-attribute-messages") || ""}}`);
+    const self = this;
+    return new Proxy(messages, {
+      set(target, prop, value) {
+        target[prop] = value;
+        self.setAttribute("intl-attribute-messages", JSLN.stringify(target).slice(1, -1));
+        return true;
+      },
+      deleteProperty(target, prop) {
+        delete target[prop];
+        self.setAttribute("intl-attribute-messages", JSLN.stringify(target).slice(1, -1));
+        return true;
+      },
+      getPrototypeOf(target) {
+        return Reflect.getPrototypeOf(target);
+      },
+      ownKeys(target) {
+        return Reflect.ownKeys(target);
+      }
+    });
+  },
+  set(value) {
+        if (value === null || value === undefined) {
+      this.removeAttribute("intl-attribute-messages");
+      return;
+    }
+    else if (
+      (Object.getPrototypeOf(value) !== Object.prototype &&
+        Object.getPrototypeOf(value) !== null)
+    ) {
+      try {
+        throw new TypeError("intl-attribute-messages must be a simple object");
+      } catch (e) {
+        console.error(e);
+        this.removeAttribute("intl-attribute-messages");
+      }
+      return;
+    }
+    this.setAttribute("intl-attribute-messages", JSLN.stringify(value).slice(1, -1));
+  },
+};
+
+export const IntlAttributeOptionsProperty = {
+  get() {
+    const attrOptions = {};
+    const self = this;
+    for (const attr of this.getAttributeNames()) {
+      if (attr.startsWith("intl-attribute-options-")) {
+        const key = attr.slice("intl-attribute-options-".length);
+        const options = JSLN.parse(`{${this.getAttribute(attr) || ""}}`);
+        attrOptions[key] = new Proxy(options, {
+          set(target, prop, value) {
+            Reflect.set(target, prop, value);
+            if (target.hasOwnProperty(prop)) {
+              self.setAttribute(`intl-attribute-options-${key}`, JSLN.stringify(target).slice(1, -1));
+            }
+            return true;
+          },
+          deleteProperty(target, prop) {
+            delete target[prop];
+            if (target.hasOwnProperty(prop)) {
+              self.setAttribute(`intl-attribute-options-${key}`, JSLN.stringify(target).slice(1, -1));
+            }
+            return true;
+          },
+          getPrototypeOf(target) {
+            return Reflect.getPrototypeOf(target);
+          },
+          ownKeys(target) {
+            return Reflect.ownKeys(target);
+          },
+        });
+      }
+    }
+    return new Proxy(attrOptions, {
+      set(target, prop, value) {
+        if (value === null || value === undefined) {
+          self.removeAttribute(`intl-attribute-options-${prop}`);
+          return true;
+        }
+        else if (
+          (Object.getPrototypeOf(value) !== Object.prototype &&
+            Object.getPrototypeOf(value) !== null)
+        ) {
+          try {
+            throw new TypeError(`intl-attribute-options-${prop} must be a simple options object`);
+          } catch (e) {
+            console.error(e);
+            self.removeAttribute(`intl-attribute-options-${prop}`);
+          }
+          return false;
+        }
+        self.setAttribute(`intl-attribute-options-${prop}`, JSLN.stringify(value).slice(1, -1));
+        Reflect.set(target, prop, value);
+        return true;
+      },
+      deleteProperty(target, prop) {
+        delete target[prop];
+        self.removeAttribute(`intl-attribute-options-${prop}`);
+        return true;
+      },
+      getPrototypeOf(target) {
+        return Reflect.getPrototypeOf(target);
+      },
+      ownKeys(target) {
+        return Reflect.ownKeys(target);
+      },
+    });
+  },
+  set(value) {
+    const current = this.intlAttributeOptions;
+    const keys = new Set(Object.keys(current));
+    for (const key in value) {
+      current[key] = value[key];
+      keys.delete(key);
+    }
+    for (const key of keys) {
+      delete current[key];
+    }
+  },
+};
+
+Object.defineProperty(HTMLElement.prototype, "intlAttributeMessages", IntlAttributeMessagesProperty);
+Object.defineProperty(HTMLElement.prototype, "intlAttributeOptions", IntlAttributeOptionsProperty);
+
+
+export default class IntlAttributeMessagesBehavior {
+  static observedAttributes = ["intl-attribute-messages", "intl-attribute-options-*"];
+
+  constructor(element, options) {}
+
+  format(element, forceUpdate) {
+    if (forceUpdate || !this.sig) this.sig = {};
+    const attributeMessages = element.intlAttributeMessages;
+    console.log("Attribute messages:", attributeMessages);
+    const fallbacks = this.fallbacks;    
+    const locale = closestLocale(element);
+    for (const [attr, messageLabel] of Object.entries(attributeMessages)) {
+      console.log(`Processing attribute: ${attr}, messageLabel: ${messageLabel}`);
+      const realMessageLabel = messageLabel === true ? fallbacks?.[attr] : messageLabel;
+      const realFallback = fallbacks?.[attr] || messageLabel;
+      console.log(`Real message label: ${realMessageLabel}, real fallback: ${realFallback}`);
+      if (!realMessageLabel) continue;
+      const attrOptions = element.intlAttributeOptions?.[attr] || {};
+      console.log(`Attribute options for ${attr}:`, attrOptions);
+      const sig = `${locale}:${realMessageLabel}:${JSLN.stringify(attrOptions)}`;
+      console.log(`Signature for ${attr}: ${sig}`);
+      if (sig !== this.sig[attr]) {
+        this.sig[attr] = sig;
+        let formatter = Intl.$formattedMessages.get(locale, realMessageLabel);
+        console.log(`Formatter found for ${attr} ${locale} ${realMessageLabel}:`, formatter);
+        if (!formatter) {
+          console.log(`Creating new formatter for ${attr} with fallback: ${realFallback}`);
+          formatter = new Intl.$messageFormat(realFallback, "default", { label: realMessageLabel });
+        }
+        element.setAttribute(attr, formatter.format(attrOptions));
+      }
+    }
+  }
+
+  connectedCallback(element) {
+    this.fallbacks = {};
+    const keys = Object.keys(element.intlAttributeMessages);
+    for (const attr of keys) {
+      console.log(`Setting fallback for attribute: ${attr}`);
+      this.fallbacks[attr] = element.getAttribute(attr);
+    }
+    this.elementCallback = () => this.format(element);
+    addToLangChangeListener(element, this.elementCallback);
+    this.format(element);
+  }
+
+  disconnectedCallback(element) {
+    removeFromLangChangeListener(element, this.elementCallback);
+    this.format(element);
+    for (const [attr, fallback] of Object.entries(this.fallbacks)) {
+      element.setAttribute(attr, fallback);
+    }
+  }
+
+  connectedMoveCallback(element) {
+    this.format(element);
+  }
+
+  attributeChangedCallback(element) {
+    this.format(element);
+  }
+}

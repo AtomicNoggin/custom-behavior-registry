@@ -1,0 +1,7 @@
+{
+  "en": {
+    "hreflang":{
+      "greeting": "This is loaded from the linked JSON file via hreflang"
+    }
+  }
+}

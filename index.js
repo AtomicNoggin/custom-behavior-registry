@@ -860,7 +860,7 @@ export default class CustomBehaviorRegistry {
         // existing observer
         if (this.#observer) {
           //flush records
-          this.#mutationAction(this.observer.takeRecords());
+          this.#mutationAction(this.#observer.takeRecords());
         } else {
           // create a new mutation observer
           const observer = new MutationObserver(this.#mutationAction);
