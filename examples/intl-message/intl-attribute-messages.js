@@ -137,7 +137,19 @@ Object.defineProperty(HTMLElement.prototype, "intlAttributeOptions", IntlAttribu
 export default class IntlAttributeMessagesBehavior {
   static observedAttributes = ["intl-attribute-messages", "intl-attribute-options-*"];
 
-  constructor(element, options) {}
+  constructor(element) {
+    // Initialize existing properties to trigger their setters if they exist
+    if (element.hasOwnProperty("intlAttributeMessages")) {
+      const messages = element.intlAttributeMessages;
+      delete element.intlAttributeMessages;
+      element.intlAttributeMessages = messages;
+    }
+    if (element.hasOwnProperty("intlAttributeOptions")) {
+      const options = element.intlAttributeOptions;
+      delete element.intlAttributeOptions;
+      element.intlAttributeOptions = options;
+    }
+  }
 
   format(element, forceUpdate) {
     if (forceUpdate || !this.sig) this.sig = {};

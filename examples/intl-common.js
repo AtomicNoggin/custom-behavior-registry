@@ -10,8 +10,6 @@ const INTL_CLOSEST_LANG_ELEMENT = Symbol("closest-lang-element");
 customBehaviors.define("intl-lang", IntlLang, { asAttribute: "lang" });
 
 const intlOptionsProperty = {
-  configurable: true,
-  enumerable: true,
   get() {
     const options = this.getAttribute("intl-options") === null
       ? {}
@@ -58,7 +56,6 @@ const intlOptionsProperty = {
   },
 };
 
-delete HTMLElement.prototype.intlOptions;
 Object.defineProperty(
   HTMLElement.prototype,
   "intlOptions",

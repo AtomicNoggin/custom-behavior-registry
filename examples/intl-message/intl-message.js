@@ -20,7 +20,19 @@ export default class IntlMessageBehavior {
   static observedAttributes = ["intl-message", "intl-options"];
   static tagExcludes = ["br", "hr", "img", "input", "link", "meta", "time", "data", "script", "style"];
 
-  constructor(element, options) {}
+  constructor(element) {
+    // Initialize existing properties to trigger their setters if they exist
+    if (element.hasOwnProperty("intlMessage")) {
+      const message = element.intlMessage;
+      delete element.intlMessage;
+      element.intlMessage = message;
+    }
+    if (element.hasOwnProperty("intlOptions")) {
+      const options = element.intlOptions;
+      delete element.intlOptions;
+      element.intlOptions = options;
+    }
+  }
 
   format(element, forceUpdate) {
     if (forceUpdate) this.sig = null;

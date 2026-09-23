@@ -5,8 +5,6 @@ const ALLOWED_FORMATS = ["number", "decimal", "currency", "percent", "unit"];
 
 Object.defineProperties(HTMLDataElement.prototype, {
   intlFormat: {
-    configurable: true,
-    enumerable: true,
     get() {
       return this.getAttribute("intl-format") || "";
     },
@@ -23,8 +21,6 @@ Object.defineProperties(HTMLDataElement.prototype, {
     },
   },
   intlCurrency: {
-    configurable: true,
-    enumerable: true,
     get() {
       return this.getAttribute("intl-currency") || "";
     },
@@ -39,8 +35,6 @@ Object.defineProperties(HTMLDataElement.prototype, {
     },
   },
   intlUnit: {
-    configurable: true,
-    enumerable: true,
     get() {
       return this.getAttribute("intl-unit") || "";
     },
@@ -58,11 +52,31 @@ Object.defineProperties(HTMLDataElement.prototype, {
 
 export default class IntlData {
   static observedAttributes = ["intl-format", "intl-currency", "intl-unit", "intl-options", "value"];
-  static tafFilter = ['data'];
+  static tagFilter = ['data'];
 
   constructor(element) {
+    // Initialize existing properties to trigger their setters
+    if (element.hasOwnProperty("intlOptions")) {
+      const options = element.intlOptions;
+      delete element.intlOptions;
+      element.intlOptions = options;
+    }
+    if (element.hasOwnProperty("intlFormat")) {
+      const format = element.intlFormat;
+      delete element.intlFormat;
+      element.intlFormat = format;
+    }
+    if (element.hasOwnProperty("intlCurrency")) {
+      const currency = element.intlCurrency;
+      delete element.intlCurrency;
+      element.intlCurrency = currency;
+    }
+    if (element.hasOwnProperty("intlUnit")) {
+      const unit = element.intlUnit;
+      delete element.intlUnit;
+      element.intlUnit = unit;
+    }
   }
-
   format(element, forceUpdate) {
     const value = Number(element.value);
     const format = element.intlFormat;
@@ -82,8 +96,10 @@ export default class IntlData {
     if (format === "unit" && element.hasAttribute("intl-unit")) {
       options.unit = element.getAttribute("intl-unit");
     }
-    const sig = `${locale}:${format}:${JSLN.stringify(options)}`;
+    console.log("Formatting with locale:", locale, "format:", format, "options:", options);
+    const sig = `${value}:${locale}:${format}:${JSLN.stringify(options)}`;
     if (sig !== this.sig) {
+      console.log("Signature:", sig, "previous signature:", this.sig);
       this.sig = sig;
       element.textContent = Number.isNaN(value)
         ? this.initialContent
@@ -98,7 +114,7 @@ export default class IntlData {
     this.format(element);
   }
 
-  attributeChangedCallback(element) {
+  attributeChangedCallback(element, attributeName, oldValue, newValue) {
     this.format(element);
   }
 

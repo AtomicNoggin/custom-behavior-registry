@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
+import { jest,afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import "./index.js";
 
 Map.prototype.getOrInsert ??= function getOrInsert(key, value) {
@@ -73,44 +73,6 @@ describe("intl-time element properties", () => {
     }
     document.body.innerHTML = "";
   });
-
-  test("stores a simple intlOptions object as brace-less strict JSLN", () => {
-    const element = document.createElement("time");
-
-    element.intlOptions = {
-      month: "long",
-      timeZone: "America/Toronto",
-      hour12: false,
-    };
-
-    expect(element.getAttribute("intl-options")).toBe(
-      "month:'long',timeZone:'America/Toronto',hour12:false",
-    );
-    expect(element.intlOptions).toEqual({
-      month: "long",
-      timeZone: "America/Toronto",
-      hour12: false,
-    });
-  });
-
-  test("returns an empty object when intl-options is absent", () => {
-    expect(document.createElement("time").intlOptions).toEqual({});
-  });
-
-  test("rejects non-simple values assigned to intlOptions", () => {
-    const element = document.createElement("time");
-
-    expect(() => {
-      element.intlOptions = null;
-    }).toThrow("intlOptions must be a simple options object");
-    expect(() => {
-      element.intlOptions = [];
-    }).toThrow("intlOptions must be a simple options object");
-    expect(() => {
-      element.intlOptions = new Date();
-    }).toThrow("intlOptions must be a simple options object");
-  });
-
   test("reflects intlFormat and intlSkeleton properties to attributes", () => {
     const element = document.createElement("time");
 

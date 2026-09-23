@@ -1,7 +1,7 @@
 import "../common.js";
 
 const ALLOWED_KEYSOURCES = ["self", "descendants"];
-const ALLOWED_COMMAND_NAMES = [
+const BUILTIN_COMMAND_NAMES = [
   "show-modal",
   "close",
   "request-close",
@@ -10,13 +10,12 @@ const ALLOWED_COMMAND_NAMES = [
   "hide-popover",
   "toggle-popover",
 ];
-const COMMANDS_SYMBOL = Symbol("commands");
-const LISTENER_SYMBOL = Symbol("listener");
-
-const REGISTRY_ELEMENT = Symbol("registry-element");
 class CustomCommandRegistry {
+  #element;
   constructor(element) {
-    this[REGISTRY_ELEMENT] = element;
+    this.#element = element;
+    this.commands = {};
+    this.listener = null;
   }
   define(command, method, options = {}) {
     const {
@@ -25,7 +24,7 @@ class CustomCommandRegistry {
       keyshortcuts,
       keysource,
     } = {
-      bindTo: this[REGISTRY_ELEMENT],
+      bindTo: this.#element,
       arguments: [],
       keyshortcuts: "",
       keysource: "self",
@@ -33,10 +32,8 @@ class CustomCommandRegistry {
     };
     if (typeof command !== "string") {
       throw new TypeError(`Command name must be a string`);
-    } else if (
-      !command.startsWith("--") 
-    ) {
-      throw new Error(
+    } else if (!command.startsWith("--")) {
+      throw new SyntaxError(
         `Command name must be a custom command starting with '--'`,
       );
     }
@@ -47,20 +44,19 @@ class CustomCommandRegistry {
       keysource = "self";
     }
     if (typeof bindTo === "string") {
-      bindTo = document.getElementById(bindTo) || this[REGISTRY_ELEMENT];
+      bindTo = document.getElementById(bindTo) || this.#element;
     }
     if (bindTo instanceof Element) {
       method = method.bind(bindTo);
     } else {
-      method = method.bind(this[REGISTRY_ELEMENT]);
+      method = method.bind(this.#element);
     }
-    this[COMMANDS_SYMBOL] = this[COMMANDS_SYMBOL] || {};
-    this[COMMANDS_SYMBOL][command] = { method, args };
-    if (!this[LISTENER_SYMBOL]) {
-      this[LISTENER_SYMBOL] = (event) => {
+    this.commands[command] = { method, args };
+    if (!this.listener) {
+      this.listener = (event) => {
         const commandName = event.command;
-        if (this[COMMANDS_SYMBOL]?.[commandName]) {
-          const { args, method } = this[COMMANDS_SYMBOL][commandName];
+        if (this.commands[commandName]) {
+          const { args, method } = this.commands[commandName];
           let eventArgs = [];
           for (const arg of args) {
             switch (arg) {
@@ -85,36 +81,33 @@ class CustomCommandRegistry {
                 }
             }
           }
-          this[COMMANDS_SYMBOL][commandName].method(...eventArgs);
+          this.commands[commandName].method(...eventArgs);
         }
       };
-      this[REGISTRY_ELEMENT].addEventListener("command", this[LISTENER_SYMBOL]);
+      this.#element.addEventListener("command", this.listener);
     }
   }
   get(command) {
     if (typeof command !== "string") {
       throw new TypeError(`Command name must be a string`);
     }
-    return this[COMMANDS_SYMBOL]?.[command];
+    return this.commands[command];
   }
   has(command) {
-    return !!this[COMMANDS_SYMBOL]?.[command];
+    return !!this.commands[command];
   }
   undefine(command) {
-    delete this[COMMANDS_SYMBOL][command];
-    if (Object.keys(this[COMMANDS_SYMBOL] || {}).length === 0) {
-      this[REGISTRY_ELEMENT].removeEventListener(
-        "command",
-        this[LISTENER_SYMBOL],
-      );
-      delete this[LISTENER_SYMBOL];
+    delete this.commands[command];
+    if (Object.keys(this.commands || {}).length === 0) {
+      this.#element.removeEventListener("command", this.listener);
+      delete this.listener;
     }
   }
   fire(command, ...args) {
     if (!this.has(command)) {
       throw new Error(`Command "${command}" is not registered on this element`);
     }
-    return this[COMMANDS_SYMBOL]?.[command].method(...args);
+    return this.commands[command].method(...args);
   }
 }
 
@@ -164,6 +157,7 @@ const commandForElementProperty = {
     if (value instanceof Element) {
       this[COMMAND_ELEMENT_SYMBOL] = new WeakRef(value);
       // leave commandfor attribute empty if element passed in to mimic default behavior
+      this.setAttribute("commandfor", "");
     } else {
       delete this[COMMAND_ELEMENT_SYMBOL];
       this.removeAttribute("commandfor");
@@ -174,7 +168,7 @@ const commandForElementProperty = {
 };
 const commandTriggerProperty = {
   get: function () {
-    let def;
+    let def = null;
     if (this.command && this.commandForElement) {
       def = "click";
       switch (this.tagName) {
@@ -240,11 +234,7 @@ Object.defineProperty(
   commandTriggerProperty,
 );
 // override the command property, so it will return non-standard method names
-Object.defineProperty(
-  HTMLButtonElement.prototype,
-  "command",
-  commandProperty,
-);
+Object.defineProperty(HTMLButtonElement.prototype, "command", commandProperty);
 // button already has commandForElement property
 Object.defineProperty(
   HTMLButtonElement.prototype,
@@ -265,18 +255,18 @@ class CommandBehavior {
       el.tagName === "BUTTON" &&
       el.commandTrigger === "click" &&
       (commandName.startsWith("--") ||
-        ALLOWED_COMMAND_NAMES.includes(commandName))
+        BUILTIN_COMMAND_NAMES.includes(commandName))
     ) {
       // let built in behavior take course.
       return;
     }
     if (commandTarget) {
-        const commandEvt = new CommandEvent("command", {
-          command: commandName,
-          source: el,
-        });
-        const allowDefault = commandTarget.dispatchEvent(commandEvt);
-        if (!commandName.startsWith('--') && allowDefault) {
+      const commandEvt = new CommandEvent("command", {
+        command: commandName,
+        source: el,
+      });
+      const allowDefault = commandTarget.dispatchEvent(commandEvt);
+      if (!commandName.startsWith("--") && allowDefault) {
         commandName = commandName.replace(/-./g, (match) =>
           match[1].toUpperCase(),
         );
@@ -286,7 +276,26 @@ class CommandBehavior {
       }
     }
   }
-  constructor(element, options) {}
+  constructor(element, options) {
+    // Initialize existing properties to trigger their setters if they exist
+    if (element.hasOwnProperty("commandTrigger")) {
+      const trigger = element.commandTrigger;
+      delete element.commandTrigger;
+      element.commandTrigger = trigger;
+    }
+    if (element.hasOwnProperty("commandForElement")) {
+      const commandForElement = element.commandForElement;
+      delete element.commandForElement;
+      if (!element.getAttribute("commandfor")) {
+        element.commandForElement = commandForElement;
+      }
+    }
+    if (element.hasOwnProperty("command")) {
+      const command = element.command;
+      delete element.command;
+      element.command = command;
+    }
+  }
   attributeChangedCallback(element, name, oldValue, newValue) {
     if (newValue === null) {
       newValue = element.commandTrigger;
@@ -308,32 +317,15 @@ class CommandBehavior {
     element.addEventListener(newValue, CommandBehavior.commmandTriggerEvent);
   }
   connectedCallback(element) {
-    // connected because it has a tabindex value
-    if (
-      !["BUTTON", "INPUT", "SELECT", "TEXTAREA"].includes(element.tagName) &&
-      element.getAttribute("tabindex").length
-    ) {
-      Object.defineProperty(element, "command", commandProperty);
-      Object.defineProperty(
-        element,
-        "commandForElement",
-        commandForElementProperty,
-      );
-      Object.defineProperty(element, "commandTrigger", commandTriggerProperty);
-    }
     const eventName = element.commandTrigger;
     element.addEventListener(eventName, CommandBehavior.commmandTriggerEvent);
   }
   disconnectedCallback(element) {
-    if (
-      !["BUTTON", "INPUT", "SELECT", "TEXTAREA"].includes(element.tagName)
-    ) {
-      delete element.command;
-      delete element.commandForElement;
-      delete element.commandTrigger;
-    }
     const eventName = element.commandTrigger;
-    element.removeEventListener(eventName, CommandBehavior.commmandTriggerEvent);
+    element.removeEventListener(
+      eventName,
+      CommandBehavior.commmandTriggerEvent,
+    );
   }
   connectedMoveCallback(element) {
     //do nothing.

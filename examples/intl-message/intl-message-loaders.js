@@ -37,8 +37,20 @@ export class IntlLinkLoaderBehavior {
     "rel",
   ];
   static tagFilter = ["link"];
+
+  constructor(element) {
+    this.loaderAction = null;
+    this.urlBuilder = null;
+    this.loadedLocales = new Set();
+    // Initialize the loader action to null and the set of loaded locales to an empty set
+    if (element.hasOwnProperty("hrefpattern")) {
+      const pattern = element.hrefpattern;
+      delete element.hrefpattern;
+      element.hrefpattern = pattern;
+    }
+  }
+
   fetchFile(url) {
-    if (!this.loadedLocales) this.loadedLocales = new Set();
     return fetch(url)
       .then((response) => response.text())
       .then((content) => {
@@ -91,9 +103,6 @@ export class IntlLinkLoaderBehavior {
     }
     return null;
   }
-
-  loaderAction;
-
   connectedCallback(element) {
     if (element.hrefpattern) {
       this.urlBuilder = new URLBuilder(element.hrefpattern, location.href);
@@ -139,7 +148,6 @@ export class IntlLinkLoaderBehavior {
 }
 
 export class IntlScriptLoaderBehavior {
-  static observedAttributes = ["type", "lang"];
   static tagFilter = ["script"];
 
   static preConnectionCheck(element) {

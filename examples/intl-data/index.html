@@ -28,7 +28,7 @@
       <data id="formatted" intl-format="decimal" value="1234.56">1234.56</data>
     </h2>
 
-    <form>
+    <form onsubmit="return false;">
       <fieldset>
         <legend>Intl-Data Attributes</legend>
 
@@ -290,7 +290,9 @@
         });
         data.intlOptions = options;
       }
-
+      optionElements.forEach((element) => {
+        element.addEventListener("change", updateOptions);
+      });
       function updateFormat() {
         const format = formatSelect.value;
         document.querySelectorAll("[show-if-currency]").forEach((element) => {
@@ -345,7 +347,6 @@
       optionElements.forEach((element) => {
         element.addEventListener("change", updateOptions);
       });
-
       updateFormat();
     </script>
   </body>

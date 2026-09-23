@@ -1,39 +1,54 @@
-import { customBehaviors, addToLangChangeListener, removeFromLangChangeListener, closestLocale } from "../intl-common.js";
+import JSLN from "jsln";
+import {
+  customBehaviors,
+  addToLangChangeListener,
+  removeFromLangChangeListener,
+  closestLocale,
+} from "../intl-common.js";
 
 const ALLOWED_FORMATS = ["date", "time", "datetime", "duration"];
-const ALLOWED_STYLES = ["full", "long", "medium", "short"]; 
+const ALLOWED_STYLES = ["full", "long", "medium", "short"];
 
 const DURATION_STYLES = ["long", "short", "narrow", "digital"];
-const DURATION_UNITS = ["years", "months", "weeks", "days", "hours", "minutes", "seconds","milliseconds", "microseconds", "nanoseconds"];
-
+const DURATION_UNITS = [
+  "years",
+  "months",
+  "weeks",
+  "days",
+  "hours",
+  "minutes",
+  "seconds",
+  "milliseconds",
+  "microseconds",
+  "nanoseconds",
+];
 
 const getLargestUnitFromOptions = (options) => {
-  if (options.yearsDisplay === "always") return "years"
-  else if (options.monthsDisplay === "always") return "months"
-  else if (options.weeksDisplay === "always") return "weeks"
-  else if (options.daysDisplay === "always") return "days"
-  else if (options.hoursDisplay === "always") return "hours"
-  else if (options.minutesDisplay === "always") return "minutes"
-  else if (options.secondsDisplay === "always") return "seconds"
-  else if (options.millisecondsDisplay === "always") return "milliseconds"
-  else if (options.microsecondsDisplay === "always") return "microseconds"
-  else if (options.nanosecondsDisplay === "always") return "nanoseconds"
+  if (options.yearsDisplay === "always") return "years";
+  else if (options.monthsDisplay === "always") return "months";
+  else if (options.weeksDisplay === "always") return "weeks";
+  else if (options.daysDisplay === "always") return "days";
+  else if (options.hoursDisplay === "always") return "hours";
+  else if (options.minutesDisplay === "always") return "minutes";
+  else if (options.secondsDisplay === "always") return "seconds";
+  else if (options.millisecondsDisplay === "always") return "milliseconds";
+  else if (options.microsecondsDisplay === "always") return "microseconds";
+  else if (options.nanosecondsDisplay === "always") return "nanoseconds";
   return "";
 };
 const getSmallestUnitFromOptions = (options) => {
-  if (options.nanosecondsDisplay === "always") return "nanoseconds"
-  else if (options.microsecondsDisplay === "always") return "microseconds"
-  else if (options.millisecondsDisplay === "always") return "milliseconds"
-  else if (options.secondsDisplay === "always") return "seconds"
-  else if (options.minutesDisplay === "always") return "minutes"
-  else if (options.hoursDisplay === "always") return "hours"
-  else if (options.daysDisplay === "always") return "days"
-  else if (options.weeksDisplay === "always") return "weeks"
-  else if (options.monthsDisplay === "always") return "months"
-  else if (options.yearsDisplay === "always") return "years"
+  if (options.nanosecondsDisplay === "always") return "nanoseconds";
+  else if (options.microsecondsDisplay === "always") return "microseconds";
+  else if (options.millisecondsDisplay === "always") return "milliseconds";
+  else if (options.secondsDisplay === "always") return "seconds";
+  else if (options.minutesDisplay === "always") return "minutes";
+  else if (options.hoursDisplay === "always") return "hours";
+  else if (options.daysDisplay === "always") return "days";
+  else if (options.weeksDisplay === "always") return "weeks";
+  else if (options.monthsDisplay === "always") return "months";
+  else if (options.yearsDisplay === "always") return "years";
   return "";
 };
-
 
 const intlFormatProperty = {
   configurable: true,
@@ -46,18 +61,28 @@ const intlFormatProperty = {
 
     if (!ALLOWED_FORMATS.includes(format)) {
       console.error(
-        `Invalid intl-format value '${format}'. Allowed values are: ` + ALLOWED_FORMATS.join(", "),
+        `Invalid intl-format value '${format}'. Allowed values are: ` +
+          ALLOWED_FORMATS.join(", "),
       );
       return;
     }
-    if ((format === "date" || format === "time") && !(firstStyle === undefined || ALLOWED_STYLES.includes(firstStyle))) {
+    if (
+      (format === "date" || format === "time") &&
+      !(firstStyle === undefined || ALLOWED_STYLES.includes(firstStyle))
+    ) {
       console.error(
-        `Invalid intl-format style modifier '${firstStyle}'. Allowed values are: ` + ALLOWED_STYLES.join(", "),
+        `Invalid intl-format style modifier '${firstStyle}'. Allowed values are: ` +
+          ALLOWED_STYLES.join(", "),
       );
       return;
-    } else if (format === "datetime" && !(firstStyle === undefined || ALLOWED_STYLES.includes(firstStyle)) && !(secondStyle === undefined || ALLOWED_STYLES.includes(secondStyle))) {
+    } else if (
+      format === "datetime" &&
+      !(firstStyle === undefined || ALLOWED_STYLES.includes(firstStyle)) &&
+      !(secondStyle === undefined || ALLOWED_STYLES.includes(secondStyle))
+    ) {
       console.error(
-        `Invalid intl-format style modifier '${secondStyle ? firstStyle+' '+secondStyle : firstStyle}'. Allowed values are: ` + ALLOWED_STYLES.join(", "),
+        `Invalid intl-format style modifier '${secondStyle ? firstStyle + " " + secondStyle : firstStyle}'. Allowed values are: ` +
+          ALLOWED_STYLES.join(", "),
       );
       return;
     }
@@ -96,7 +121,7 @@ const dateTimeFromProperty = {
     return this.getAttribute("datetime-from") || "";
   },
   set(value) {
-    this.setAttribute("datetime-from", value + ""); 
+    this.setAttribute("datetime-from", value + "");
   },
 };
 delete HTMLTimeElement.prototype.dateTimeFrom;
@@ -133,6 +158,35 @@ export default class IntlTime {
     "datetime-from",
     "datetime-to",
   ];
+
+  constructor(element) {
+    // Initialize existing properties to trigger their setters if they exist
+    if (element.hasOwnProperty("intlFormat")) {
+      const format = element.intlFormat;
+      delete element.intlFormat;
+      element.intlFormat = format;
+    }
+    if (element.hasOwnProperty("intlSkeleton")) {
+      const skeleton = element.intlSkeleton;
+      delete element.intlSkeleton;
+      element.intlSkeleton = skeleton;
+    }
+    if (element.hasOwnProperty("intlOptions")) {
+      const options = element.intlOptions;
+      delete element.intlOptions;
+      element.intlOptions = options;
+    }
+    if (element.hasOwnProperty("dateTimeFrom")) {
+      const dateTimeFrom = element.dateTimeFrom;
+      delete element.dateTimeFrom;
+      element.dateTimeFrom = dateTimeFrom;
+    }
+    if (element.hasOwnProperty("dateTimeTo")) {
+      const dateTimeTo = element.dateTimeTo;
+      delete element.dateTimeTo;
+      element.dateTimeTo = dateTimeTo;
+    }
+  }
 
   skeletonToOptions = (skeleton) => {
     const skeletonRE = /([GMeEca]{1,5}|[ySzO]{1,4}|[dhHkKms]{1,2})/g,
@@ -411,8 +465,10 @@ export default class IntlTime {
     combined.requestedFormat = type[0] || "datetime";
     if (combined.requestedFormat === "duration") {
       combined.style = combined.style || type[1] || "short";
-      combined.smallestUnit = getSmallestUnitFromOptions(combined) || type[2] || "seconds";
-      combined.largestUnit = getLargestUnitFromOptions(combined) || type[3] || "years";
+      combined.smallestUnit =
+        getSmallestUnitFromOptions(combined) || type[2] || "seconds";
+      combined.largestUnit =
+        getLargestUnitFromOptions(combined) || type[3] || "years";
       if (!DURATION_STYLES.includes(combined.style)) {
         combined.style = "short";
       }
@@ -422,7 +478,10 @@ export default class IntlTime {
       if (!DURATION_UNITS.includes(combined.largestUnit)) {
         combined.largestUnit = "years";
       }
-      if (DURATION_UNITS.indexOf(combined.smallestUnit) < DURATION_UNITS.indexOf(combined.largestUnit)) {
+      if (
+        DURATION_UNITS.indexOf(combined.smallestUnit) <
+        DURATION_UNITS.indexOf(combined.largestUnit)
+      ) {
         const hold = combined.smallestUnit;
         combined.smallestUnit = combined.largestUnit;
         combined.largestUnit = hold;
@@ -512,7 +571,10 @@ export default class IntlTime {
     }
     if (time && date && (!year || !day)) {
       // not a complete date when required
-      console.error("Incorrect date format, not a complete date when required:", dt);
+      console.error(
+        "Incorrect date format, not a complete date when required:",
+        dt,
+      );
     }
     if (date && time && tzId) {
       try {
@@ -629,9 +691,9 @@ export default class IntlTime {
           largestUnit: options.largestUnit || "years",
           smallestUnit: options.smallestUnit || "seconds",
         });
-        const { requestedFormat, largestUnit, smallestUnit, ...durationOptions } =
-          options;
-        element.textContent = duration.toLocaleString(lang, durationOptions);
+      const { requestedFormat, largestUnit, smallestUnit, ...durationOptions } =
+        options;
+      element.textContent = duration.toLocaleString(lang, durationOptions);
     } catch (e) {
       console.error(
         "Error formatting duration:",
@@ -644,7 +706,7 @@ export default class IntlTime {
       element.textContent = this.initContent;
     }
   }
-  format(element,forceUpdate) {
+  format(element, forceUpdate) {
     this.initValue = this.initContent || element.textContent;
     if (
       element.intlFormat ||
@@ -656,16 +718,7 @@ export default class IntlTime {
       }
       const options = this.getCombinedOptions(element),
         lang = closestLocale(element),
-        sig =
-          lang +
-          ":" +
-          JSON.stringify(options) +
-          ":" +
-          element.dateTime +
-          ":" +
-          element.dateTimeFrom +
-          ":" +
-          element.dateTimeTo;
+        sig = `${element.dateTime}:${element.dateTimeFrom}:${element.dateTimeTo};${lang}:${JSLN.stringify(options)}`;
       if (sig !== this.sig) {
         this.sig = sig;
         if (options.requestedFormat === "duration") {
@@ -679,20 +732,26 @@ export default class IntlTime {
             temporal = temporal.withCalendar(options.calendar);
           }
           if (options.timeZone) {
-            temporal = (temporal.withTimeZone
+            temporal = temporal.withTimeZone
               ? temporal.withTimeZone(options.timeZone)
               : temporal.toZonedDateTime
                 ? temporal.toZonedDateTime(options.timeZone)
                 : temporal.toZonedDateTimeISO
                   ? temporal.toZonedDateTimeISO(options.timeZone)
-                  : temporal);
+                  : temporal;
             delete options.timeZone;
           }
           try {
             element.textContent = temporal.toLocaleString(lang, options);
-          }
-          catch (e) {
-            console.error("Error formatting date:", e, "lang:", lang, "options:", options);
+          } catch (e) {
+            console.error(
+              "Error formatting date:",
+              e,
+              "lang:",
+              lang,
+              "options:",
+              options,
+            );
             element.textContent = this.initContent;
           }
         } else {
@@ -703,8 +762,6 @@ export default class IntlTime {
       element.textContent = this.initContent;
     }
   }
-
-  constructor(element) {}
   attributeChangedCallback(element, attributeName, newValue, oldValue) {
     this.format(element);
   }

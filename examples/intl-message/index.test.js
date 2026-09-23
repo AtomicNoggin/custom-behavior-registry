@@ -225,7 +225,7 @@ describe("intl-message example", () => {
         fr: { greeting: "Bonjour" },
       });
 
-      new IntlScriptLoaderBehavior().connectedCallback(script);
+      new IntlScriptLoaderBehavior(script).connectedCallback(script);
 
       expect(Intl.$formattedMessages.get("en", "greeting").format()).toBe(
         "Hello",
@@ -240,7 +240,7 @@ describe("intl-message example", () => {
       script.lang = "fr";
       script.textContent = JSLN.stringify({ greeting: "Bonjour" });
 
-      new IntlScriptLoaderBehavior().connectedCallback(script);
+      new IntlScriptLoaderBehavior(script).connectedCallback(script);
 
       expect(Intl.$formattedMessages.has("fr", "greeting")).toBe(true);
       expect(Intl.$formattedMessages.has("en", "greeting")).toBe(false);
@@ -251,7 +251,7 @@ describe("intl-message example", () => {
       const script = document.createElement("script");
       script.textContent = "{not valid";
 
-      expect(() => new IntlScriptLoaderBehavior().connectedCallback(script)).not.toThrow();
+      expect(() => new IntlScriptLoaderBehavior(script).connectedCallback(script)).not.toThrow();
       expect(error).toHaveBeenCalledWith(
         "Failed to load messages from script:",
         expect.any(Error),
@@ -269,7 +269,7 @@ describe("intl-message example", () => {
       const link = document.createElement("link");
       link.href = "./en/hreflang.json";
       link.hreflang = "en";
-      const behavior = new IntlLinkLoaderBehavior();
+      const behavior = new IntlLinkLoaderBehavior(link);
 
       try {
         await behavior.loadLocale(link, "en");
@@ -292,7 +292,7 @@ describe("intl-message example", () => {
       });
       globalThis.fetch = fetchMock;
       const link = document.createElement("link");
-      const behavior = new IntlLinkLoaderBehavior();
+      const behavior = new IntlLinkLoaderBehavior(link);
       behavior.urlBuilder = {
         hasNamedValue: (name) => name === "lang",
         exec: ({ lang }) => `./${lang}/hrefpattern.json`,
@@ -321,7 +321,7 @@ describe("intl-message example", () => {
       globalThis.fetch = fetchMock;
       const link = document.createElement("link");
       link.href = "./en/hreflang.json";
-      const behavior = new IntlLinkLoaderBehavior();
+      const behavior = new IntlLinkLoaderBehavior(link);
 
       try {
         await behavior.connectedCallback(link);
