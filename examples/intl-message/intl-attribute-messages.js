@@ -142,25 +142,18 @@ export default class IntlAttributeMessagesBehavior {
   format(element, forceUpdate) {
     if (forceUpdate || !this.sig) this.sig = {};
     const attributeMessages = element.intlAttributeMessages;
-    console.log("Attribute messages:", attributeMessages);
     const fallbacks = this.fallbacks;    
     const locale = closestLocale(element);
     for (const [attr, messageLabel] of Object.entries(attributeMessages)) {
-      console.log(`Processing attribute: ${attr}, messageLabel: ${messageLabel}`);
       const realMessageLabel = messageLabel === true ? fallbacks?.[attr] : messageLabel;
       const realFallback = fallbacks?.[attr] || messageLabel;
-      console.log(`Real message label: ${realMessageLabel}, real fallback: ${realFallback}`);
       if (!realMessageLabel) continue;
       const attrOptions = element.intlAttributeOptions?.[attr] || {};
-      console.log(`Attribute options for ${attr}:`, attrOptions);
       const sig = `${locale}:${realMessageLabel}:${JSLN.stringify(attrOptions)}`;
-      console.log(`Signature for ${attr}: ${sig}`);
       if (sig !== this.sig[attr]) {
         this.sig[attr] = sig;
         let formatter = Intl.$formattedMessages.get(locale, realMessageLabel);
-        console.log(`Formatter found for ${attr} ${locale} ${realMessageLabel}:`, formatter);
         if (!formatter) {
-          console.log(`Creating new formatter for ${attr} with fallback: ${realFallback}`);
           formatter = new Intl.$messageFormat(realFallback, "default", { label: realMessageLabel });
         }
         element.setAttribute(attr, formatter.format(attrOptions));
@@ -172,7 +165,6 @@ export default class IntlAttributeMessagesBehavior {
     this.fallbacks = {};
     const keys = Object.keys(element.intlAttributeMessages);
     for (const attr of keys) {
-      console.log(`Setting fallback for attribute: ${attr}`);
       this.fallbacks[attr] = element.getAttribute(attr);
     }
     this.elementCallback = () => this.format(element);

@@ -29,9 +29,7 @@ point a control at it with `commandfor`:
 <script type="module">
   const editor = document.querySelector("#editor");
 
-  editor.customCommand.define("--save", function () {
-    console.log("Saving", this);
-  });
+  editor.customCommand.define("--save", function () {});
 </script>
 ```
 
@@ -51,9 +49,7 @@ Custom command names must start with `--`.
 ```js
 const target = document.querySelector("#editor");
 
-target.customCommand.define("--notify", (message) => {
-  console.log(message);
-});
+target.customCommand.define("--notify", (message) => {});
 
 target.customCommand.has("--notify");
 target.customCommand.get("--notify");
