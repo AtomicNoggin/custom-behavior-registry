@@ -21,6 +21,8 @@ Uses the options object from each registered behavior definition to determine ho
 
 If more than one option is set, an element will be connected if it matches any one setting.
 
+If no options are set, the behavior class must have at least one of `tagFilter`, `tagExcludes`, or `preConnectionCheck` set to limit the number of connected elements.
+
 ```js
 customBehaviors.define('[role="tablist"] > [role="tab"]',TabHandler, {asQuery:true});
 // matches the second element in <[tagname]] role="tablist" ...>  <[tagname] role="tab" ...>

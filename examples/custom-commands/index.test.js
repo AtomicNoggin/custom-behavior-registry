@@ -110,6 +110,27 @@ describe("CustomCommandsBehavior", () => {
     expect(literal).toBe("literal");
   });
 
+  test("supports command properties on a tabindex element", () => {
+    const target = document.createElement("div");
+    const source = document.createElement("div");
+    const method = jest.fn();
+    target.customCommand.define("--tabindexed", method);
+    source.setAttribute("tabindex", "0");
+    source.command = "--tabindexed";
+    source.commandForElement = target;
+    source.commandTrigger = "command-keydown";
+
+    connect(target);
+    connect(source);
+
+    expect(source.command).toBe("--tabindexed");
+    expect(source.commandForElement).toBe(target);
+    expect(source.commandTrigger).toBe("command-keydown");
+
+    source.dispatchEvent(new Event("command-keydown"));
+    expect(method).toHaveBeenCalledTimes(1);
+  });
+
   test("uses change as the default trigger for select controls", () => {
     const target = document.createElement("div");
     target.id = "change-target";

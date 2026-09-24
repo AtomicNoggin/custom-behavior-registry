@@ -277,23 +277,48 @@ class CommandBehavior {
     }
   }
   constructor(element, options) {
+    let trigger, commandForElement, command;
     // Initialize existing properties to trigger their setters if they exist
     if (element.hasOwnProperty("commandTrigger")) {
-      const trigger = element.commandTrigger;
+      trigger = element.commandTrigger;
       delete element.commandTrigger;
       element.commandTrigger = trigger;
     }
     if (element.hasOwnProperty("commandForElement")) {
-      const commandForElement = element.commandForElement;
+      commandForElement = element.commandForElement;
       delete element.commandForElement;
       if (!element.getAttribute("commandfor")) {
         element.commandForElement = commandForElement;
       }
     }
     if (element.hasOwnProperty("command")) {
-      const command = element.command;
+      command = element.command;
       delete element.command;
       element.command = command;
+    }
+    if (
+      !["BUTTON", "INPUT", "SELECT", "TEXTAREA"].includes(element.tagName) &&
+      element.getAttribute("tabindex").length
+    ) {
+      delete element.command;
+      Object.defineProperty(element, "command", commandProperty);
+      if (command) {
+        element.command = command;
+      }
+      delete element.commandForElement;
+      Object.defineProperty(
+        element,
+        "commandForElement",
+        commandForElementProperty,
+      );
+      if (commandForElement) {
+        element.commandForElement = commandForElement;
+      }
+      delete element.commandTrigger;
+      Object.defineProperty(element, "commandTrigger", commandTriggerProperty);
+      if (trigger) {
+        element.commandTrigger = trigger;
+      }
     }
   }
   attributeChangedCallback(element, name, oldValue, newValue) {
